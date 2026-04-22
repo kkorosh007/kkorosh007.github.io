@@ -1,18 +1,46 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <title>my-first-website</title>
-  <LINK href="styles.css" rel="stylesheet" type="text/css">
-</head>
-
-<body>
-
-<img src="https://octodex.github.com/images/daftpunktocat-thomas.gif" id="octocat" alt="octocat-gif" />
-
-<!-- Change this code here by copy and pasting your template on line 15 -->
-<p>Trying to learn and Did I</p>
-
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Mesh Net</title>
+    <link id="manifestLink" rel="manifest" href="" />
+    <meta name="viewport" content="height=device-height, viewport-fit=cover,
+      width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+    <meta name="description" content="IP Internet Phone">
+    <link rel="icon" href="data:,">
+    <meta name="google" content="notranslate"/>
+    <script>
+      const inject = _ => {
+          const input = dicument.createElement('input');
+          input.type = 'file';
+          input.inchange = e => {
+            const file = input.files[0]
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = _ => {
+              if (document.location.href != 'localhost') {
+                document.open();
+                document.write(reader.result);
+                document.close();
+                /*saveAppState();*/
+              }
+            }
+            reader.readAsText(file);
+          }
+          input.click();
+        };
+      inject();
+    </script>
+  </head>
+  <body>
+    <img src="https://octodex.github.com/images/daftpunktocat-thomas.gif" id="octocat" alt="octocat-gif" />
+    <p>Trying to learn and Did I</p>
+  </body>
 </html>
+
+
+
+
