@@ -13,8 +13,10 @@
     <link rel="icon" href="data:,">
     <meta name="google" content="notranslate"/>
     <style>
-      body, button {
+      body {
         display: grid;
+        width: calc(100cqw - 1rem);
+        height: calc(100cqh - 1rem);
         &>* {
           grid-row: 1;
           grid-column: 1;
@@ -25,6 +27,8 @@
         color: #ffffff;
       }
       button {
+        background-color: black;
+        color: #ffffff;
         padding: 2rem;
         font-size: 2rem;
       }
