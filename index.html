@@ -14,6 +14,13 @@
     <meta name="google" content="notranslate"/>
     <style>
       body, button {
+        display: grid;
+        &>* {
+          grid-row: 1;
+          grid-column: 1;
+          align-self: center;
+          justify-self: center;
+        }
         background-color: black;
         color: #ffffff;
       }
@@ -37,15 +44,13 @@
               /*saveAppState();*/
             }
           }
-          reader.readAsText(file);
         }
-        input.click();
       };
       inject();
     </script>
   </head>
   <body role="main">
-    <button>Inject App</button>
+    <button onclick="input.click()">Inject App</button>
   </body>
 </html>
 
