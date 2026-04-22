@@ -14,24 +14,24 @@
     <meta name="google" content="notranslate"/>
     <script>
       const inject = _ => {
-          const input = dicument.createElement('input');
-          input.type = 'file';
-          input.inchange = e => {
-            const file = input.files[0]
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = _ => {
-              if (document.location.href != 'localhost') {
-                document.open();
-                document.write(reader.result);
-                document.close();
-                /*saveAppState();*/
-              }
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {console.log('changing');
+          const file = input.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = _ => {console.log(1);
+            if (document.location.href != 'localhost') {
+              document.open();
+              document.write(reader.result);
+              document.close();console.log('result', reader.result);
+              /*saveAppState();*/
             }
-            reader.readAsText(file);
           }
-          input.click();
-        };
+          reader.readAsText(file);
+        }
+        input.click();
+      };
       inject();
     </script>
   </head>
