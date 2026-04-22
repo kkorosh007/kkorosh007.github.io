@@ -13,8 +13,16 @@
     <link rel="icon" href="data:,">
     <meta name="google" content="notranslate"/>
     <style>
+      *, *::before, *::after {
+        --bg1: black;
+        --fg1: #ffffff;
+        background-color: var(--bg1);
+        color: var(--fg1);
+      }
       body {
         display: grid;
+        overflow: hidden;
+        position: relative;
         width: calc(100cqw - 1rem);
         height: calc(100cqh - 1rem);
         &>* {
@@ -23,12 +31,8 @@
           align-self: center;
           justify-self: center;
         }
-        background-color: black;
-        color: #ffffff;
       }
       button {
-        background-color: black;
-        color: #ffffff;
         padding: 2rem;
         font-size: 2rem;
       }
@@ -58,6 +62,7 @@
     <button onclick="input.click()">Inject App</button>
   </body>
 </html>
+
 
 
 
