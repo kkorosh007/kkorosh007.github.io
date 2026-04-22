@@ -35,6 +35,29 @@
       button {
         padding: 2rem;
         font-size: 2rem;
+        appearance: none;
+        border: 0;
+        border-radius: 5px;
+      }
+      button:active {
+        transform: scale(0.98);
+      }
+      button:hover {
+        background: #1d49aa;
+      }
+      button:focus {
+        outline: none;
+        box-shadow: 0 0 0 4px #cbd6ee;
+      }
+      button:focus-visible {
+        outline: 2px solid orange;
+      }
+      button::focus-within {
+        outline: 2px solid red;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     </style>
     <script>      
@@ -59,11 +82,8 @@
     </script>
   </head>
   <body role="main">
-    <button onclick="input.click()">Inject App</button>
+    <button onclick="input.click()" aria-label="Inject App">Inject App</button>
   </body>
 </html>
-
-
-
 
 
