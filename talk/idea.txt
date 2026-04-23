@@ -1,0 +1,19 @@
+Where are we
+
+A ) we have portal to connect
+
+B ) webapp to maintain app state
+
+3 ) dynamic manifest
+
+Peer A connects to portal
+
+  welcome
+  settings
+  call
+  answer
+
+The key functions are call and answer.  Each can be preconfigured in settings eg:
+  use of turn, stun and signaling servers (not needed for lan use)
+
+in the even no signaling server is provided the user can use qr codes, the clipboard to
