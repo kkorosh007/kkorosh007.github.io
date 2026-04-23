@@ -69,14 +69,16 @@
           const file = input.files[0];
           if (!file) return;
           const reader = new FileReader();
-          reader.onload = _ => {console.log(1);
+          reader.onload = _ => {
+            console.log('loaded');
             if (document.location.href != 'localhost') {
               document.open();
               document.write(reader.result);
               document.close();
               /*saveAppState();*/
             }
-          }
+          };
+          reader.readAsText(file);
         };
         input.click();
       };
