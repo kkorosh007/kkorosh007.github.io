@@ -115,16 +115,27 @@
         const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
         return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
       };
-      const tryjs = _ => {
-        const phoneNumber = '07566656578', message = 'HELLO';
-        window.location.href = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
+      let outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+      const runcode = _ => {
+        let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+        let result = '', error = '';
+        if (marker == -1) marker = code.length;
+        code = code.substring(0, marker);
+        outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+        try {result = eval(code)} catch(e) { error = e.message};
+        t.value += `
+
+${outputmarker}
+
+${result}
+`;
       };
   </script>
   </head>
   <body role="main">
-    <a href="sms:07566656578?body=Hello%20world" style="align-self: start;">Click Me</a>
+    <button onclick="runcode()" style="align-self: start;">Run</button>
     <button onclick="inject()" aria-label="Inject App">Inject App Home</button>
-    <button onclick="tryjs()" style="align-self: start; justify-self: start;">SMS</button>
+    <textarea style="align-self: end; min-height: 40%; min-width: 80%;"></textarea>
   </body>
 </html>
 
