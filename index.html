@@ -145,24 +145,24 @@ ${outputmarker}
 ${result}
 `;
       };
-    window.onload = _ => {
-      const t = document.querySelector('textarea');
-      t.onkeydown = e => {
-        if (e.key == "F5") {
-          const p = t.selectionStart;
-          e.preventDefault();
-          runcode();
-          t.selectionStart = t.selectionEnd = p;
-        };
-        if (e.key === "Tab") {
-          e.preventDefault();
-          let s = t.selectionStart, e2 = t.selectionEnd;
-          t.value = t.value.slice(0, s) + "\t" + t.value.slice(e2);
-          t.selectionStart = t.selectionEnd = s + 1;
+      window.onload = _ => {
+        const t = document.querySelector('textarea');
+        t.onkeydown = e => {
+          if (e.key == "F3") {
+            const p = t.selectionStart;
+            e.preventDefault();
+            runcode();
+            t.selectionStart = t.selectionEnd = p;
+          };
+          if (e.key === "Tab") {
+            e.preventDefault();
+            let s = t.selectionStart, e2 = t.selectionEnd;
+            t.value = t.value.slice(0, s) + "\t" + t.value.slice(e2);
+            t.selectionStart = t.selectionEnd = s + 1;
+          };
         };
       };
-    }
-  </script>
+    </script>
   </head>
   <body role="main">
     <button onclick="runcode()" style="align-self: start;">Run</button>
