@@ -125,6 +125,16 @@
         outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
         try {eval('try {' + code + '} catch(e) { throw(new Error(e.stack)) } ')} catch(e) {
           error = 'ERROR: ' + e.message + '\n';
+          const lines = xx.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            line = lines[i];
+            if (line.includes('at eval')) {
+              const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
+              lines[i] = line.substring(0, p1) + line.substring(p2);
+              break;
+            };
+          };
+          error = lines.join('\n');
         };
         result = result.join('\n') + '\n' + error;
         t.value = code + `
