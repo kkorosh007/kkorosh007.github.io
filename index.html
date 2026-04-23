@@ -115,11 +115,19 @@
         const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
         return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
       };
-    </script>
+      const tryjs = _ => {
+        const phoneNumber = '075651366478', 'I like to live by the see, do you?') => {
+        window.location.href = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
+      };
+
+sendViaSms('07566656578', 'Hello world');
+      }
+  </script>
   </head>
   <body role="main">
-    <a href="sms:07566656578?body=data:text/html,%3Cbutton%20onclick%3D%22alert(9)%22%3EClick%20me%3C%2Fbutton%3E" style="align-self: start;">Click Me</a>
+    <a href="sms:07566656578?body=Hello%20world" style="align-self: start;">Click Me</a>
     <button onclick="inject()" aria-label="Inject App">Inject App Home</button>
+    <button onclick="tryjs()" style="align-self: start; justify-self: start;">SMS Message</button>
   </body>
 </html>
 
