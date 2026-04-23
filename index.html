@@ -64,7 +64,8 @@
       const inject = _ => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.onchange = e => {console.log('changing');
+        input.onchange = e => {
+          console.log('changing');
           const file = input.files[0];
           if (!file) return;
           const reader = new FileReader();
@@ -76,7 +77,8 @@
               /*saveAppState();*/
             }
           }
-        }
+        };
+        input.click();
       };
     </script>
   </head>
