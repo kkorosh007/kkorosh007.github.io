@@ -127,7 +127,7 @@
   t.value = code + `
 
 
-  
+
 ${outputmarker}
 
 ${result}
@@ -136,6 +136,10 @@ ${result}
     window.onload = _ => {
       const t = document.querySelector('textarea');
       t.onkeydown = e => {
+        if (e.key = "F5") {
+          e.preventDefault();
+          runcode();
+        };
         if (e.key === "Tab") {
           e.preventDefault();
           let s = t.selectionStart, e2 = t.selectionEnd;
@@ -149,7 +153,7 @@ ${result}
   <body role="main">
     <button onclick="runcode()" style="align-self: start;">Run</button>
     <button onclick="inject()" aria-label="Inject App">Inject App Home</button>
-    <textarea style="align-self: end; min-height: 40%; min-width: 80%;"></textarea>
+    <textarea autofocus style="font-size: 1.2rem; align-self: end; min-height: 40%; min-width: 80%;"></textarea>
   </body>
 </html>
 
