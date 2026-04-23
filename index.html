@@ -124,6 +124,7 @@
   code = code.substring(0, marker);
   outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
   try {result = eval(code)} catch(e) { error = e.message};
+  result += '\n' + error;
   t.value = code + `
 
 
