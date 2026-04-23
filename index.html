@@ -110,9 +110,10 @@
         return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes));
       }
       const testAESPassword = async _ => {
+        const p = prompt('Enter Password');
         const salt = crypto.getRandomValues(new Uint8Array(16));
-        const keya = await createAesKeyFromPassword('Killer', salt);
-        const keyb = await createAesKeyFromPassword('Killer', salt);
+        const keya = await createAesKeyFromPassword(p, salt);
+        const keyb = await createAesKeyFromPassword(p, salt);
         const cp = await encryptBytes(keya, new Uint8Array([65, 66, 67]))
         try {
           const dp = await decryptBytes(keyb, cp.iv, cp.ciphertext);
