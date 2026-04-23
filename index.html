@@ -137,8 +137,10 @@ ${result}
       const t = document.querySelector('textarea');
       t.onkeydown = e => {
         if (e.key == "F5") {
+          const p = t.selectionStart;
           e.preventDefault();
           runcode();
+          t.selectionStart = t.selectionEnd = p;
         };
         if (e.key === "Tab") {
           e.preventDefault();
