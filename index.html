@@ -125,7 +125,7 @@
         outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
         try {eval('try {' + code + '} catch(e) { throw(new Error(e.stack)) } ')} catch(e) {
           error = 'ERROR: ' + e.message + '\n';
-          const lines = xx.split('\n');
+          const lines = error.split('\n');
           for (let i = 0; i < lines.length; i++) {
             line = lines[i];
             if (line.includes('at eval')) {
