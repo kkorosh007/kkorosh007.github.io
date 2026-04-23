@@ -61,7 +61,7 @@
       }
     </style>
     <script>
-      //{
+      {
         const inject = _ => {
           const input = document.createElement('input');
           input.type = 'file';
@@ -157,7 +157,7 @@
   ${result}
   `;
         };
-        window.onload = _ => {
+        window.addEventListener('load', _ => {
           const b = document.querySelectorAll('button');
           b[0].addEventListener('click', runcode );
           b[1].addEventListener('click', inject );
@@ -176,8 +176,8 @@
               t.selectionStart = t.selectionEnd = s + 1;
             };
           };
-        };
-      //}
+        }, {once: true});
+      }
     </script>
   </head>
   <body role="main">
