@@ -60,124 +60,129 @@
         cursor: not-allowed;
       }
     </style>
-    <script>      
-      const inject = _ => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.onchange = e => {
-          console.log('changing');
-          const file = input.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = _ => {
-            console.log('loaded');
-            if (document.location.href != 'localhost') {
-              document.open();
-              document.write(reader.result);
-              document.close();
-              /*saveAppState();*/
-            }
+    <script>
+      {
+        const inject = _ => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.onchange = e => {
+            console.log('changing');
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = _ => {
+              console.log('loaded');
+              if (document.location.href != 'localhost') {
+                document.open();
+                document.write(reader.result);
+                document.close();
+                /*saveAppState();*/
+              }
+            };
+            reader.readAsText(file);
           };
-          reader.readAsText(file);
+          input.click();
         };
-        input.click();
-      };
-      const createAesKey = async _ => crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-      const createAesKeyFromPassword = async (password, salt) => {
-        if (!salt) salt = crypto.getRandomValues(new Uint8Array(16));
-        const passwordBytes = new TextEncoder().encode(password);
-        const passwordKey = await crypto.subtle.importKey('raw', passwordBytes, 'PBKDF2', false, ['deriveKey']);
-        return await crypto.subtle.deriveKey(
-          {
-            name: 'PBKDF2',
-            salt: salt,
-            iterations: 100000,
-            hash: 'SHA-256'
-          },
-          passwordKey,
-          { name: 'AES-GCM', length: 256 },
-          true,
-          ['encrypt', 'decrypt']
-        );
-      };
-      const exportKey = async key => new Uint8Array(await crypto.subtle.exportKey('raw', key));
-      const importKey = async rawBytes => crypto.subtle.importKey('raw', rawBytes, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
-      const encryptBytes = async (key, bytes) => {
-        const iv = crypto.getRandomValues(new Uint8Array(12)), c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes);
-        return { iv, ciphertext: new Uint8Array(c) };
-      };
-      const decryptBytes = async (key, iv, cipherBytes) => {
-        return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes));
-      }
-      const testAESPassword = async _ => {
-        const p = prompt('Enter Password');
-        const salt = crypto.getRandomValues(new Uint8Array(16));
-        const keya = await createAesKeyFromPassword(p, salt);
-        const keyb = await createAesKeyFromPassword(p, salt);
-        const cp = await encryptBytes(keya, new Uint8Array([65, 66, 67]))
-        try {
-          const dp = await decryptBytes(keyb, cp.iv, cp.ciphertext);
-          console.log('result', dp);
-        } catch (e) { console.log('error'); }
-      };
-      const sendEncryptedRequest = async (message, endpoint) => {
-        const keyBytes = new Uint8Array([0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0x10,0x32,0x54,0x76,0x98,0xba,0xdc,0xfe,0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa,0xff,0xee,0xdd,0xcc,0xbb,0xaa,0x99,0x88]);
-        const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-        const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
-        return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
-      };
-      let outputmarker = '';
-      const runcode = async _ => {
-        let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
-        let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
-        if (marker == -1 || outputmarker == '') marker = code.length;
-        else marker = marker - 3;
-        code = code.substring(0, marker);
-        outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
-        try {await eval(`"use strict";(async _ => {${code}})()`)} catch(e) {
-          error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
-          const lines = error.split('\n');
-          for (let i = 0; i < lines.length; i++) {
-            line = lines[i];
-            if (line.includes('at eval')) {
-              const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
-              lines[i] = line.substring(0, p1) + line.substring(p2);
-              break;
+        const createAesKey = async _ => crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const createAesKeyFromPassword = async (password, salt) => {
+          if (!salt) salt = crypto.getRandomValues(new Uint8Array(16));
+          const passwordBytes = new TextEncoder().encode(password);
+          const passwordKey = await crypto.subtle.importKey('raw', passwordBytes, 'PBKDF2', false, ['deriveKey']);
+          return await crypto.subtle.deriveKey(
+            {
+              name: 'PBKDF2',
+              salt: salt,
+              iterations: 100000,
+              hash: 'SHA-256'
+            },
+            passwordKey,
+            { name: 'AES-GCM', length: 256 },
+            true,
+            ['encrypt', 'decrypt']
+          );
+        };
+        const exportKey = async key => new Uint8Array(await crypto.subtle.exportKey('raw', key));
+        const importKey = async rawBytes => crypto.subtle.importKey('raw', rawBytes, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+        const encryptBytes = async (key, bytes) => {
+          const iv = crypto.getRandomValues(new Uint8Array(12)), c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes);
+          return { iv, ciphertext: new Uint8Array(c) };
+        };
+        const decryptBytes = async (key, iv, cipherBytes) => {
+          return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes));
+        }
+        const testAESPassword = async _ => {
+          const p = prompt('Enter Password');
+          const salt = crypto.getRandomValues(new Uint8Array(16));
+          const keya = await createAesKeyFromPassword(p, salt);
+          const keyb = await createAesKeyFromPassword(p, salt);
+          const cp = await encryptBytes(keya, new Uint8Array([65, 66, 67]))
+          try {
+            const dp = await decryptBytes(keyb, cp.iv, cp.ciphertext);
+            console.log('result', dp);
+          } catch (e) { console.log('error'); }
+        };
+        const sendEncryptedRequest = async (message, endpoint) => {
+          const keyBytes = new Uint8Array([0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0x10,0x32,0x54,0x76,0x98,0xba,0xdc,0xfe,0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa,0xff,0xee,0xdd,0xcc,0xbb,0xaa,0x99,0x88]);
+          const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+          const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
+          return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
+        };
+        let outputmarker = '';
+        const runcode = async _ => {
+          let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+          let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
+          if (marker == -1 || outputmarker == '') marker = code.length;
+          else marker = marker - 3;
+          code = code.substring(0, marker);
+          outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+          try {await eval(`"use strict";(async _ => {${code}})()`)} catch(e) {
+            error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
+            const lines = error.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              line = lines[i];
+              if (line.includes('at eval')) {
+                const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
+                lines[i] = line.substring(0, p1) + line.substring(p2);
+                break;
+              };
+            };
+            error = lines.join('\n');
+          };
+          result = result.join('\n') + '\n' + error;
+          t.value = code + `
+
+
+  ${outputmarker}
+
+  ${result}
+  `;
+        };
+        window.onload = _ => {
+          const b = document.querySelectorAll('button');
+          b[0].addEventListener('click', runcode );
+          b[1].addEventListener('click', inject );
+          const t = document.querySelector('textarea');
+          t.onkeydown = e => {
+            if (e.key == "F3") {
+              const p = t.selectionStart;
+              e.preventDefault();
+              runcode();
+              t.selectionStart = t.selectionEnd = p;
+            };
+            if (e.key === "Tab") {
+              e.preventDefault();
+              let s = t.selectionStart, e2 = t.selectionEnd;
+              t.value = t.value.slice(0, s) + "\t" + t.value.slice(e2);
+              t.selectionStart = t.selectionEnd = s + 1;
             };
           };
-          error = lines.join('\n');
         };
-        result = result.join('\n') + '\n' + error;
-        t.value = code + `
-
-
-${outputmarker}
-
-${result}
-`;
-      };
-      window.onload = _ => {
-        const t = document.querySelector('textarea');
-        t.onkeydown = e => {
-          if (e.key == "F3") {
-            const p = t.selectionStart;
-            e.preventDefault();
-            runcode();
-            t.selectionStart = t.selectionEnd = p;
-          };
-          if (e.key === "Tab") {
-            e.preventDefault();
-            let s = t.selectionStart, e2 = t.selectionEnd;
-            t.value = t.value.slice(0, s) + "\t" + t.value.slice(e2);
-            t.selectionStart = t.selectionEnd = s + 1;
-          };
-        };
-      };
+      }
     </script>
   </head>
   <body role="main">
-    <button onclick="runcode()" style="align-self: start;">Run</button>
-    <button onclick="inject()" style="display: none;" aria-label="Inject App">Inject App Home</button>
+    <button style="align-self: start;">Run</button>
+    <button style="display: none;" aria-label="Inject App">Inject App Home</button>
     <textarea autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;"></textarea>
   </body>
 </html>
