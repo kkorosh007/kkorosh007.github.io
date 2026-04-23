@@ -82,10 +82,26 @@
         };
         input.click();
       };
+      const createAesKey = async _ => crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+      const exportKey = async key => new Uint8Array(await crypto.subtle.exportKey('raw', key));
+      const importKey = async rawBytes => crypto.subtle.importKey('raw', rawBytes, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+      const encryptBytes = async (key, bytes) => {
+        const iv = crypto.getRandomValues(new Uint8Array(12)), c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes);
+        return { iv, ciphertext: new Uint8Array(c) };
+      };
+      const decryptBytes = async (key, iv, cipherBytes) => {
+        return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes));
+      }
+      const sendEncryptedRequest = async (message, endpoint) => {
+        const keyBytes = new Uint8Array([0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0x10,0x32,0x54,0x76,0x98,0xba,0xdc,0xfe,0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa,0xff,0xee,0xdd,0xcc,0xbb,0xaa,0x99,0x88]);
+        const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+        const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
+        return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
+      };
     </script>
   </head>
   <body role="main">
-    <button onclick="inject()" aria-label="Inject App">Inject App 38</button>
+    <button onclick="inject()" aria-label="Inject App">Inject App</button>
   </body>
 </html>
 
