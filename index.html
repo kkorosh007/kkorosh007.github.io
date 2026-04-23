@@ -109,6 +109,16 @@
       const decryptBytes = async (key, iv, cipherBytes) => {
         return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes));
       }
+      const testAESPassword = async _ => {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const keya = await createAesKeyFromPassword('Killer', salt);
+        const keyb = await createAesKeyFromPassword('Killer', salt);
+        const cp = await encryptBytes(keya, new Uint8Array([65, 66, 67]))
+        try {
+          const dp = await decryptBytes(keyb, cp.iv, cp.ciphertext);
+          console.log('result', dp);
+        } catch (e) { console.log('error'); }
+      };
       const sendEncryptedRequest = async (message, endpoint) => {
         const keyBytes = new Uint8Array([0x01,0x23,0x45,0x67,0x89,0xab,0xcd,0xef,0x10,0x32,0x54,0x76,0x98,0xba,0xdc,0xfe,0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa,0xff,0xee,0xdd,0xcc,0xbb,0xaa,0x99,0x88]);
         const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
