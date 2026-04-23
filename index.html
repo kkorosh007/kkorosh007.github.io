@@ -132,7 +132,7 @@
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
           let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
           if (marker == -1 || outputmarker == '') marker = code.length;
-          else marker = marker - 3;console.log('marker', marker);
+          else marker = marker - 3;
           code = code.substring(0, marker).replace(/\n+$/, '');
           outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
           try {await eval(`"use strict";(async _ => {${code}})()`)} catch(e) {
