@@ -83,7 +83,7 @@
         input.click();
       };
       const createAesKey = async _ => crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-      const createAesKeyFromPasswordf = async (password, salt) => {
+      const createAesKeyFromPassword = async (password, salt) => {
         if (!salt) salt = crypto.getRandomValues(new Uint8Array(16));
         const passwordBytes = new TextEncoder().encode(password);
         const passwordKey = await crypto.subtle.importKey('raw', passwordBytes, 'PBKDF2', false, ['deriveKey']);
