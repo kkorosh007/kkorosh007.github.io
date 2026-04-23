@@ -115,17 +115,19 @@
         const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
         return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
       };
-      let outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+      let outputmarker = '';
       const runcode = _ => {
-  let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
-  let result = '', error = '';
-  if (marker == -1 || outputmarker == '') marker = code.length;
-  else marker = marker - 3;
-  code = code.substring(0, marker);
-  outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
-  try {result = new Function('', code)} catch(e) { error = 'ERROR: ' + e.message + '\n' + e.stack + '\n'};
-  result += '\n' + error;
-  t.value = code + `
+        let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+        let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
+        if (marker == -1 || outputmarker == '') marker = code.length;
+        else marker = marker - 3;
+        code = code.substring(0, marker);
+        outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+        try {eval('try {' + code + '} catch(e) { throw(new Error(e.stack)) } ')} catch(e) {
+          error = 'ERROR: ' + e.message + '\n';
+        };
+        result = result.join('\n') + '\n' + error;
+        t.value = code + `
 
 
 ${outputmarker}
