@@ -128,8 +128,8 @@
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
         let outputmarker = '';
-        const runcode = async input => {
-          let t = document.querySelector('textarea'); t.value = input; let code = t.value, marker = code.indexOf(outputmarker);
+        const runcode = async _ => {
+          let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
           let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
           if (marker == -1 || outputmarker == '') marker = code.length;
           else marker = marker - 3;console.log('marker', marker);
