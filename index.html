@@ -125,7 +125,7 @@
         outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
         //try {await eval('new Promise(async (resolve, reject) => {try {\n' + code + '\n} catch(e) { reject(new Error(e.stack)) }})')} catch(e) {
         try {await eval(`(async _ => {${code}})()`)} catch(e) {
-          error = 'ERROR: ' + e.message + '\n';
+          error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
           const lines = error.split('\n');
           for (let i = 0; i < lines.length; i++) {
             line = lines[i];
