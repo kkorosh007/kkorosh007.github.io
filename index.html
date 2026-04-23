@@ -116,7 +116,7 @@
         return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
       };
       const tryjs = _ => {
-        const phoneNumber = '07566656578', message = 'I like to live by the see, do you?';
+        const phoneNumber = '07566656578', message = 'HELLO';
         window.location.href = `sms:${phoneNumber}?body=${encodeURIComponent(message)}`;
       };
   </script>
@@ -124,7 +124,7 @@
   <body role="main">
     <a href="sms:07566656578?body=Hello%20world" style="align-self: start;">Click Me</a>
     <button onclick="inject()" aria-label="Inject App">Inject App Home</button>
-    <button onclick="tryjs()" style="align-self: start; justify-self: start;">SMS Message</button>
+    <button onclick="tryjs()" style="align-self: start; justify-self: start;">SMS</button>
   </body>
 </html>
 
