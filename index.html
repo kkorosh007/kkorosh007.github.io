@@ -117,19 +117,31 @@
       };
       let outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
       const runcode = _ => {
-        let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
-        let result = '', error = '';
-        if (marker == -1) marker = code.length;
-        code = code.substring(0, marker);
-        outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
-        try {result = eval(code)} catch(e) { error = e.message};
-        t.value += `
+  let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+  let result = '', error = '';
+  if (marker == -1 || outputmarker == '') marker = code.length;
+  else marker = marker - 2;
+  code = code.substring(0, marker);
+  outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+  try {result = eval(code)} catch(e) { error = e.message};
+  t.value = code + `
 
 ${outputmarker}
 
 ${result}
 `;
       };
+    window.onload = _ => {
+      const t = document.querySelector('textarea');
+      t.onkeydown = e => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          let s = t.selectionStart, e2 = t.selectionEnd;
+          t.value = t.value.slice(0, s) + "\t" + t.value.slice(e2);
+          t.selectionStart = t.selectionEnd = s + 1;
+        };
+      };
+    }
   </script>
   </head>
   <body role="main">
