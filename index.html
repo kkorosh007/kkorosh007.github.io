@@ -120,13 +120,12 @@
   let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
   let result = '', error = '';
   if (marker == -1 || outputmarker == '') marker = code.length;
-  else marker = marker - 4;
+  else marker = marker - 3;
   code = code.substring(0, marker);
   outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
-  try {result = eval(code)} catch(e) { error = e.message};
+  try {result = new Function('', code)} catch(e) { error = 'ERROR: ' + e.message + '\n' + e.stack + '\n'};
   result += '\n' + error;
   t.value = code + `
-
 
 
 ${outputmarker}
