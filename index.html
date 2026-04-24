@@ -62,7 +62,7 @@
     </style>
     <script>  // Main Window Uncaught Error Handler
       "use strict";
-      window.addEventListener("error2", event => {
+      window.addEventListener("error", event => {
         const {message, filename, lineno, colno, text = event.error.message, stack = event.error.stack} = event
         const msg = `
         Captured error:\n
