@@ -60,10 +60,12 @@
       }
     </style>
     <script>
+      const state = {};
       function runner(handler, content) {
-        document.open();
-        document.write(content);
-        document.close();
+        state.content = content;
+        //document.open();
+        //document.write(content);
+        //document.close();
       }
     </script>
   </head>
