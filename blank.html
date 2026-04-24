@@ -62,12 +62,12 @@
         height: 80%;
         display: block;
       }
-      body[style*="--iframe: 1"] {
+      html[style*="--iframe: 0"] {
         display: none;
       }
     </style>
     <script>
-      document.body.style.setProperty("--iframe", 0);
+      document.documentElement.style.setProperty("--iframe",  window.self == window.top ? 0 : 1);
       {
         let g = HTMLCanvasElement.prototype.getContext;
         if(!g.dummy){
