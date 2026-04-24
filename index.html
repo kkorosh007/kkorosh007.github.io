@@ -211,6 +211,7 @@
               t.selectionStart = t.selectionEnd = s + 1;
             };
           };
+          window.addEventListener('keypress', e => e.code == 'BracketRight' ? iframeView() : null, {once: true});
         }, {once: true});
       }
     </script>
