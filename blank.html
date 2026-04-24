@@ -61,8 +61,15 @@
     </style>
     <script>
       const state = {};
-      function runner(handler, content) {
-        state.content = content;
+      function runner(id, content) {
+        if (state[id] == undefined) {
+          state[id] = content
+          const code = b.contentDocument.createElement("script");
+          code.addEventListener('load', _ => console.log('loaded'))
+          code.addEventListener('error', _ => console.log('error'))
+          code.textContent = content;
+          document.documentElement.appendChild(code);
+        };
         //document.open();
         //document.write(content);
         //document.close();

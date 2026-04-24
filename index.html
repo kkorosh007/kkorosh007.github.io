@@ -60,6 +60,23 @@
         cursor: not-allowed;
       }
     </style>
+    <script>  // Main Window Uncaught Error Handler
+      "use strict";
+      window.addEventListener("error2", event => {
+        const {message, filename, lineno, colno, text = event.error.message, stack = event.error.stack} = event
+        const msg = `
+        Captured error:\n
+          message  : ${message}
+          filename : ${filename}
+          lineno   : ${lineno}
+          colno    : ${colno}
+          text     : ${text}
+          stack    :\n\n${stack}
+        `
+        tCode.value += msg //prompt('Error Please', msg)
+        event.returnValue = true
+      })
+    </script>
     <script>
       {
         const inject = _ => {
@@ -127,6 +144,7 @@
           const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
+
         let outputmarker = '';
         const runcode = async _ => {
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
@@ -157,6 +175,7 @@
   ${result}
   `;
         };
+
         window.addEventListener('load', _ => {
           const b = document.querySelectorAll('button');
           b[0].addEventListener('click', runcode );
@@ -183,7 +202,7 @@
   <body role="main">
     <button style="align-self: start;">Run</button>
     <button id="bJect" style="display: none;" aria-label="Inject App">Inject App Home</button>
-    <textarea autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;"></textarea>
+    <textarea id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;"></textarea>
   </body>
 </html>
 
