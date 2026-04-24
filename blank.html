@@ -62,8 +62,12 @@
         height: 80%;
         display: block;
       }
+      body[style*="--iframe: 1"] {
+        display: none;
+      }
     </style>
     <script>
+      document.body.style.setProperty("--iframe", 0);
       {
         let g = HTMLCanvasElement.prototype.getContext;
         if(!g.dummy){
@@ -87,10 +91,18 @@
         //document.open();
         //document.write(content);
         //document.close();
+
       }
     </script>
   </head>
   <body>
-    <div class="scanner"><video id=video></video></div>
+    <div class="scanner">
+      <video id=video></video></div>
+      <div style="padding: 1rem;flex-direction: column;display: flex;width: 100px;height: auto;border: 1px solid yellow;place-self: center; gap: 1rem;">
+        <h3 style=" margin: 0; text-align: center; line-height: 1;">Lover</h3>
+        <button>Marcus</button>
+        <button>Robert</button>
+        <button>Mary</button>
+    </div>
   </body>
 </html>
