@@ -79,6 +79,16 @@
     </script>
     <script>
       {
+        let g = HTMLCanvasElement.prototype.getContext;
+        if(!g.dummy){
+          HTMLCanvasElement.prototype.getContext=function(t,o={}){
+            if(t==="2d")o={willReadFrequently:true,...o};
+            return g.call(this,t,o);
+          };
+          HTMLCanvasElement.prototype.getContext.dummy=1;
+        }
+      };
+      {
         const inject = _ => {
           const input = document.createElement('input');
           input.type = 'file';
