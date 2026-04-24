@@ -60,6 +60,16 @@
       }
     </style>
     <script>
+      {
+        let g = HTMLCanvasElement.prototype.getContext;
+        if(!g.dummy){
+          HTMLCanvasElement.prototype.getContext=function(t,o={}){
+            if(t==="2d")o={willReadFrequently:true,...o};
+            return g.call(this,t,o);
+          };
+          HTMLCanvasElement.prototype.getContext.dummy=1;
+        }
+      };
       const state = {};
       function runner(id, content) {
         if (state[id] == undefined) {
