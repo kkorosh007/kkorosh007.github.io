@@ -154,10 +154,10 @@
           const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
-        const iframeView = (container =document.body) => {
+        const iframeView = (container = document.body) => {
           const iframe = document.body.appendChild(document.createElement('iframe'));
           Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
-          iframe.setAttribute("sandbox", "allow-scripts");
+          //iframe.setAttribute("sandbox", "allow-scripts");
           iframe.src = '/blank.html';
           return container.appendChild(iframe);
         }
