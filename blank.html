@@ -14,14 +14,7 @@
     <meta name="google" content="notranslate"/>
     <style>
       body {
-        background-color: black;
-        color: white;
-        font-size: 1.2rem;
-      }
-      .scanner {
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: relative;
         display: grid;
         &>* {
           grid-row: 1;
@@ -29,9 +22,21 @@
           align-self: center;
           justify-self: unset;
         }
-        width: 100%;
-        max-width: 100svh;
-        aspect-ratio: 1 / 1;
+        background-color: black;
+        color: white;
+        font-size: 1.2rem;
+        height: 100svh;
+      }
+      .scanner {
+        display: grid;
+        &>* {
+          grid-row: 1;
+          grid-column: 1;
+          align-self: center;
+          justify-self: unset;
+        }
+        max-height: 80%;
+        max-width: 80%;
       }
       .scanner > video {
         width: 100%;
@@ -48,6 +53,6 @@
     </script>
   </head>
   <body>
-    Test Text
+    <div class="scanner"><video id=video></video></div>
   </body>
 </html>
