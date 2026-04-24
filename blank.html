@@ -78,20 +78,31 @@
           HTMLCanvasElement.prototype.getContext.dummy=1;
         }
       };
-      const state = {};
-      function runner(id, content) {
-        if (state[id] == undefined) {
-          state[id] = content
+      const state = {
+        qrcreate: async resolve => {
+          const QRCode = (await import("https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"));
+          console.log('qrcreated');
+          resolve('hello');
+        },
+        qrscan: async resolve => {
+          const QrScanner = (await import("https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js")).default;
+          console.log('qrscan');
+          resolve('hello');
+        }
+      };
+      function runner(type, content, handler) {
+        let u = "undefined";
+        if (type == "qrcreate" && typeof(QRCode) == u || type == "qrscan" && typeof(QRScanner) == u) {
           const code = b.contentDocument.createElement("script");
-          code.addEventListener('load', _ => console.log('loaded'))
-          code.addEventListener('error', _ => console.log('error'))
+          const remove = _ => {
+            let sc = document.scripts[document.scripts.length - 1];
+            sc.parentElement.removeChild(sc);
+          }
+          code.addEventListener('load',  _ => remove(state[type](handler)), {once: true});
+          code.addEventListener('error', _ => remove(state[type]({type: 'error', handler, stack: e})), {once: true});
           code.textContent = content;
           document.documentElement.appendChild(code);
         };
-        //document.open();
-        //document.write(content);
-        //document.close();
-
       }
     </script>
   </head>
