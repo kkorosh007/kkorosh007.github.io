@@ -104,13 +104,9 @@
           } else console.log('already loaded');
           let qrString = '';
           if (command == 'qr') {
-            qrString = await create(command, message);
-            resolve(qrString);
+            qrString = await create(message);
+            //resolve(qrString);
           }
-          qrString = qrString.replace(
-            "<svg",
-            '<svg preserveAspectRatio="xMidYMid meet"'
-          );
           document.querySelector('.create').innerHTML = qrString
           resolve(qrString);
         },
