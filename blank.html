@@ -99,12 +99,12 @@
             );
           };
           if (typeof(QRCode) == 'undefined') {
-            QRCode = (await import("/3rd-party/qrcode.min.js"));
+            await runScript("/3rd-party/qrcode.min.js");
             console.log('qrcreated');
           } else console.log('already loaded');
           if (command == 'qr') resolve(create(command, message));
 
-          let qrString = qrString.replace(
+          qrString = qrString.replace(
             "<svg",
             '<svg preserveAspectRatio="xMidYMid meet"'
           );
@@ -132,6 +132,17 @@
           resolve('hello');
         }
       };
+      const runScript = async src => new Promise(resolve => {
+        const code = b.contentDocument.createElement("script");
+        const remove = _ => {
+          let sc = document.scripts[document.scripts.length - 1];
+          sc.parentElement.removeChild(sc);
+        }
+        code.addEventListener('load',  _ => remove(resolve()), {once: true});
+        code.addEventListener('error', _ => remove(resolve({type: 'error', handler, stack: e})), {once: true});
+        code.textContent = content;
+        document.documentElement.appendChild(code);
+      });
       function runner(type, content, handler) {
         let u = "undefined";
         if (type == "qrcreate" && typeof(QRCode) == u || type == "qrscan" && typeof(QRScanner) == u) {
