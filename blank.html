@@ -104,7 +104,7 @@
           } else console.log('already loaded');
           if (command == 'qr') resolve(create(command, message));
 
-          qrString = qrString.replace(
+          let qrString = qrString.replace(
             "<svg",
             '<svg preserveAspectRatio="xMidYMid meet"'
           );
