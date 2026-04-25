@@ -99,23 +99,36 @@
             );
           };
           if (typeof(QRCode) == 'undefined') {
-            QRCode = (await import("https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"));
+            QRCode = (await import("3rd-party/qrcode.min.js"));
             console.log('qrcreated');
           } else console.log('already loaded');
           if (command == 'qr') resolve(create(command, message));
 
-          document.body.children[0].innerHTML = qrString.replace(
+          qrString = qrString.replace(
             "<svg",
             '<svg preserveAspectRatio="xMidYMid meet"'
           );
-
-          resolve('hello');
+          document.querySelector('svg').src = qrString
+          resolve(qrString);
         },
         qrscan: async resolve => {
           if (typeof(QRScanner) == 'undefined') {
-            QRScanner = (await import("https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js")).default;
+            QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
             console.log('qrscan');
           } else console.log('already loaded');
+          let video = document.querySelector("video");
+          const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)}; // qrerror
+          const cfg = {onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
+          let chunks = [], numRead = 0, action, first = true;
+          const qrScan = new QrScanner(video, async result => { // ret = (type, data) => handler(type, data);
+            xx = result;
+            console.log('done');
+            resolve(qrScan, result);
+            if (first) {
+              first = false;
+              setTimeout(_ => qrScan.stop(), 10000);
+            }
+          });
           resolve('hello');
         }
       };
