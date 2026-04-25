@@ -80,13 +80,17 @@
       };
       var state = {
         qrcreate: async resolve => {
-          const QRCode = (await import("https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"));
-          console.log('qrcreated');
+          if (typeof(QRCode) == 'undefined') {
+            QRCode = (await import("https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"));
+            console.log('qrcreated');
+          } else console.log('already loaded');
           resolve('hello');
         },
         qrscan: async resolve => {
-          const QrScanner = (await import("https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js")).default;
-          console.log('qrscan');
+          if (typeof(QRScanner) == 'undefined') {
+            QRScanner = (await import("https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js")).default;
+            console.log('qrscan');
+          } else console.log('already loaded');
           resolve('hello');
         }
       };
