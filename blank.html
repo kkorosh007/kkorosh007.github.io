@@ -19,12 +19,8 @@
         padding: 2rem;
         background-color: black;
         color: white;
-      }DDJ
-      [style*="--iframe: 1"]>* {
-        display: none;
       }
       body {
-        --iframe: 1;
         position: relative;
         display: grid;
         &>* {
@@ -37,6 +33,9 @@
         height: 100%;
         margin: 0;
         padding: 0;
+      }
+      body:not([style*="--iframe"]) > * {
+        display: none;
       }
       .scanner {
         display: grid;
@@ -156,15 +155,28 @@
           return qrScan;
         }
       };
-      const runScript = async src => new Promise(resolve => {
+      const runScript = async (src, type = 'url') => new Promise(resolve => {
         const code = document.createElement("script");
         const remove = _ => {
           let sc = document.scripts[document.scripts.length - 1];
           sc.parentElement.removeChild(sc);
         }
-        code.addEventListener('load',  _ => remove(resolve()), {once: true});
-        code.addEventListener('error', _ => remove(resolve({type: 'error', handler, stack: e})), {once: true});
-        code.src = src;
+        if (type == 'url') {
+          code.addEventListener('load',  _ => remove(resolve('loaded')), {once: true});
+          code.addEventListener('error', _ => remove(resolve({type: 'error', stack: e})), {once: true});
+          code.src = src;
+        } else  {
+          code.resolve = resolve;
+          code.textContent = src + `
+            {
+              const script = document.scripts[document.scripts.length -1];
+              const resolve = script.resolve;
+              delete script.resolve;
+              script.parentElement.removeChild(script);
+              resolve('loaded');
+            }`;
+          setTimeout(_ => resolve({type: 'error', stack: 'UNKNOWN'}), 100);
+        }
         document.documentElement.appendChild(code);
       });
       function runner(type, content, handler) {
@@ -184,10 +196,10 @@
     </script>
   </head>
   <body>
-    <div class="scanner">
+    <div class="scanner" sstyle="--iframe: 1">
       <video id=video></video>
       <div class="create scanner"></div>
-      <div style="padding: 1rem;flex-direction: column;display: flex;width: fit-content;height: auto;border: 1px solid yellow;place-self: center; gap: 1rem;">
+      <div style="padding: 1rem; flex-direction: column; display: flex; width: fit-content; height: auto; border: 1px solid yellow;place-self: center; gap: 1rem;">
         <h3 style=" margin: 0; text-align: center; line-height: 1;">QR Create</h3>
         <button>Ready</button>
         <button>Feedback</button>
