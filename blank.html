@@ -133,7 +133,7 @@
         }
       };
       const runScript = async src => new Promise(resolve => {
-        const code = b.contentDocument.createElement("script");
+        const code = document.createElement("script");
         const remove = _ => {
           let sc = document.scripts[document.scripts.length - 1];
           sc.parentElement.removeChild(sc);
