@@ -140,7 +140,7 @@
         }
         code.addEventListener('load',  _ => remove(resolve()), {once: true});
         code.addEventListener('error', _ => remove(resolve({type: 'error', handler, stack: e})), {once: true});
-        code.textContent = content;
+        code.src = src;
         document.documentElement.appendChild(code);
       });
       function runner(type, content, handler) {
