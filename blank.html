@@ -111,7 +111,7 @@
             "<svg",
             '<svg preserveAspectRatio="xMidYMid meet"'
           );
-          document.querySelector('svg').src = qrString
+          document.querySelector('.create').innerHTML = qrString
           resolve(qrString);
         },
         qrscan: async resolve => {
