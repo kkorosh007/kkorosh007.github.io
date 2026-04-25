@@ -79,11 +79,36 @@
         }
       };
       var state = {
-        qrcreate: async resolve => {
+        qrcreate: async (resolve, command, message) => {
+          const create = async message => {
+            let qrString = await QRCode.toString(message, {
+              type: "svg",
+              scale: 4,
+              errorCorrectionLevel: "H",
+              margin: 4,
+              width: 420,
+              color: {
+                dark: "#000000",
+                light: "#ffffff"
+              },
+              version: 15
+            });
+            return qrString.replace(
+              "<svg",
+              '<svg preserveAspectRatio="xMidYMid meet"'
+            );
+          };
           if (typeof(QRCode) == 'undefined') {
             QRCode = (await import("https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"));
             console.log('qrcreated');
           } else console.log('already loaded');
+          if (command == 'qr') resolve(create(command, message));
+
+          document.body.children[0].innerHTML = qrString.replace(
+            "<svg",
+            '<svg preserveAspectRatio="xMidYMid meet"'
+          );
+
           resolve('hello');
         },
         qrscan: async resolve => {
@@ -112,12 +137,13 @@
   </head>
   <body>
     <div class="scanner">
-      <video id=video></video></div>
-      <div style="padding: 1rem;flex-direction: column;display: flex;width: 100px;height: auto;border: 1px solid yellow;place-self: center; gap: 1rem;">
-        <h3 style=" margin: 0; text-align: center; line-height: 1;">Lover</h3>
-        <button>Marcus</button>
-        <button>Robert</button>
-        <button>Mary</button>
+      <video id=video></video>
+      <div style="padding: 1rem;flex-direction: column;display: flex;width: fit-content;height: auto;border: 1px solid yellow;place-self: center; gap: 1rem;">
+        <h3 style=" margin: 0; text-align: center; line-height: 1;">QR Create</h3>
+        <button>Ready</button>
+        <button>Feedback</button>
+        <button>Cancel</button>
+      </div>
     </div>
   </body>
 </html>
