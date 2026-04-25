@@ -19,11 +19,12 @@
         padding: 2rem;
         background-color: black;
         color: white;
-      }
-      [style*="--iframe: 0"]>* {
+      }DDJ
+      [style*="--iframe: 1"]>* {
         display: none;
       }
       body {
+        --iframe: 1;
         position: relative;
         display: grid;
         &>* {
@@ -67,7 +68,6 @@
       }
     </style>
     <script>
-      document.documentElement.style.setProperty("--iframe",  window.self == window.top ? 0 : 1);
       {
         let g = HTMLCanvasElement.prototype.getContext;
         if(!g.dummy){
@@ -119,16 +119,41 @@
           const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)}; // qrerror
           const cfg = {onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
           let chunks = [], numRead = 0, action, first = true;
-          const qrScan = new QrScanner(video, async result => { // ret = (type, data) => handler(type, data);
-            xx = result;
-            console.log('done');
-            resolve(qrScan, result);
-            if (first) {
-              first = false;
-              setTimeout(_ => qrScan.stop(), 10000);
+          const qrScan = new QRScanner(video, async result => { // ret = (type, data) => handler(type, data);
+            let data = result.data, index = data.indexOf("@");
+            if (index == -1) return resolve(qrScan, 'qrmessage', data);
+            let meta = data.substring(0, index), args = meta.split(",");
+            data = data.substring(index); 
+            if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage', data);
+            let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
+            if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage', data);
+            if (noOfChunks != chunks.length) {
+              chunks = new Array(noOfChunks);
+              numRead = 0;
             }
-          });
-          resolve('hello');
+            if (chunks[pos]) return;  // no need to notify handler until done
+            numRead++;
+            chunks[pos] = data;
+            if (pos == 0) action = command;
+            if (numRead == noOfChunks) {
+              console.log("got ACTION", action);
+              qrScan.stop();
+              qrScan = null;
+              setTimeout(_ => {
+                const message = chunks.splice(0, noOfChunks).join("");
+                chunks = new Array();
+                numRead = 0;
+                console.log('got coded message', action, message);
+                // TODO: choose based on command (remmber size in on our side)
+                // maybe check if a hander is available otherwise output into the document
+                // can send handler(command, message)
+                return resolve(qrScan, action, data);
+                //document.open(); document.write(message); document.close();
+              }, 0);
+            } else console.log('Input', noOfChunks, numRead, pos); // no need to notify hadler until done
+          }, cfg);
+          qrScan.start();
+          return qrScan;
         }
       };
       const runScript = async src => new Promise(resolve => {
