@@ -13,6 +13,78 @@
     <link rel="icon" href="data:,">
     <meta name="google" content="notranslate"/>
     <style>
+      html {
+        font-size: 16px;
+        height: 100dvh;
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        color: white;
+      }
+      body {
+        --percent: 50%;
+        gap: 5rem;
+        position: relative;
+        display: block;
+        font-size: 1.2rem;
+        width: calc(100% - 4rem);
+        height: calc(100% - 4rem);
+        grid-template-columns: 1fr;
+        margin: 0;
+        padding: 2rem;
+        &>* {
+          align-self: center;
+          justify-self: center;
+        }
+      }
+      svg, video {
+        width: 100%;
+        height: 100%;
+      }
+      svg[class="scan-region-highlight-svg"] {
+        stroke: green !important; 
+        stroke-width: 10 !important;
+      }
+      .scan-region-highlight > svg[class="code-outline-highlight"] {
+        stroke: lime !important;
+      }
+      .qr_container {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr; /*calc(100% - var(--percent)) calc(var(--percent) - 1rem);*/
+        grid-template-rows: 1fr;
+        width: 100%;
+        height: 100%;
+        gap: 1rem;
+      }
+      .qr_container > .qr_child {
+        grid-column: 1;
+        grid-row: 1;
+        overflow: hidden;
+        overflow-wrap: break-word;
+        padding: 0;
+        border: 1px solid #ccc;
+      }
+      .qr_overlay {
+        grid-column: 1 / -1;
+        grid-row: 1 / -1;
+        background-color: rgba(255, 0, 0, .7);
+        position: absolute;
+        inset: 20%;
+      }
+      .tit {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        &>:nth-child(2) {
+          display: none;
+        }
+      }
+      @media (max-aspect-ratio: 1/1) {
+        .xqr_container {
+          grid-template-columns: 1fr;
+          grid-template-rows: calc(100% - var(--percent)) calc(var(--percent) - 1rem)
+        }
+      }
     </style>
     <script>
       {
@@ -201,80 +273,6 @@
       });
     }
   </script>
-  <style>
-    html {
-      font-size: 16px;
-      height: 100dvh;
-      margin: 0;
-      padding: 0;
-      background-color: black;
-      color: white;
-    }
-    body {
-      --percent: 50%;
-      gap: 5rem;
-      position: relative;
-      display: block;
-      font-size: 1.2rem;
-      width: calc(100% - 4rem);
-      height: calc(100% - 4rem);
-      grid-template-columns: 1fr;
-      margin: 0;
-      padding: 2rem;
-      &>* {
-        align-self: center;
-        justify-self: center;
-      }
-    }
-    svg, video {
-      width: 100%;
-      height: 100%;
-    }
-    svg[class="scan-region-highlight-svg"] {
-      stroke: green !important; 
-      stroke-width: 10 !important;
-    }
-    .scan-region-highlight > svg[class="code-outline-highlight"] {
-      stroke: lime !important;
-    }
-    .qr_container {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr; /*calc(100% - var(--percent)) calc(var(--percent) - 1rem);*/
-      grid-template-rows: 1fr;
-      width: 100%;
-      height: 100%;
-      gap: 1rem;
-    }
-    .qr_container > .qr_child {
-      grid-column: 1;
-      grid-row: 1;
-      overflow: hidden;
-      overflow-wrap: break-word;
-      padding: 0;
-      border: 1px solid #ccc;
-    }
-    .qr_overlay {
-      grid-column: 1 / -1;
-      grid-row: 1 / -1;
-      background-color: rgba(255, 0, 0, .7);
-      position: absolute;
-      inset: 20%;
-    }
-    .tit {
-      grid-template-columns: 1fr;
-      grid-template-rows: 1fr;
-      &>:nth-child(2) {
-        display: none;
-      }
-    }
-    @media (max-aspect-ratio: 1/1) {
-      .xqr_container {
-        grid-template-columns: 1fr;
-        grid-template-rows: calc(100% - var(--percent)) calc(var(--percent) - 1rem)
-      }
-    }
-  </style>
   </head>
   <body>
     <div class="qr_container">
@@ -282,7 +280,12 @@
       <div class="qr_child qr_scan">
         <video id=video></video>
       </div>
-      <div class="qr_overlay" style="display:none;"></div>
+      <div class="qr_overlay" style="display:none;">
+        <span>Are you ok man</span>
+        <button>Option 1</button>
+        <button>Option 2</button>
+        <button>Option 3</button>
+      </div>
     </div>
   </body>
 </html>
