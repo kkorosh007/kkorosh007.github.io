@@ -28,20 +28,21 @@
       var state = {
         chunkSize: 50,
         msgSegments: [],
+        grCfg: {
+          type: "svg",
+          scale: 1,
+          errorCorrectionLevel: "M",
+          margin: 4,
+          //width: 600,
+          color: {
+            dark: "#000000",
+            light: "#ffffff"
+          },
+          version: 15
+        };
         qrcreate: async (resolve, command, message) => {
           const create = async message => {
-            let qrString = await QRCode.toString(message, {
-              type: "svg",
-              scale: 1,
-              errorCorrectionLevel: "M",
-              margin: 4,
-              //width: 600,
-              color: {
-                dark: "#000000",
-                light: "#ffffff"
-              },
-              version: 15
-            });
+            let qrString = await QRCode.toString(message, state.qrCfg);
             return qrString.replace(
               "<svg",
               '<svg preserveAspectRatio="xMidYMid meet"'
