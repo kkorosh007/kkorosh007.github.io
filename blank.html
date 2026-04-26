@@ -174,9 +174,11 @@
     window.onload = _ => {
       document.querySelector('.qr_scan').addEventListener('click', async _ => {
         if (qrSCAN) qrSCAN.stop();
+        alert('kk');
         qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
       }, {once: true});
       document.querySelector('.qr_create').addEventListener('click', async _ => {
+alert(2);
         state.msgSegments.stop = 1
         const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
         setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
