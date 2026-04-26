@@ -66,10 +66,11 @@
             state.msgSegments[i] = i + ',' + noOfMessages + ',v' + command + 'v@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
           }
           let pos = 0;
-          setInterval(async _ => {
+          let interval = setInterval(async _ => {
             qrString = await create(state.msgSegments[pos]);
             pos = (pos + 1) % noOfMessages;
-            document.querySelector('.qr_create').innerHTML = qrString
+            document.querySelector('.qr_create').innerHTML = qrString;
+            if (state.msgSegments.stop) clearInterval(interval);
           }, 150);
         },
         qrscan: async resolve => {
@@ -169,16 +170,18 @@
       </div>
 
 */
-let qrSCAN = null;
-window.onload = _ => {
-  document.body.addEventListener('click', async _ => {
-    qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
-    document.body.addEventListener('click', async _ => {
-      const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
-      await state.qrcreate(data => {console.log('created qr', data); }, type, message);
-    }, {once: true});
-  }, {once: true});
-}
+    let qrSCAN = null;
+    window.onload = _ => {
+      document.querySelector('.qr_scan').addEventListener('click', async _ => {
+        if (qrSCAN) qrSCAN.stop();
+        qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
+      }, {once: true});
+      document.querySelector('.qr_create').addEventListener('click', async _ => {
+        state.msgSegments.stop = 1
+        const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
+        setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
+      });
+    }
   </script>
   <style>
     html {
@@ -256,7 +259,7 @@ window.onload = _ => {
   <body>
     <div class="qr_container">
       <div class="qr_child qr_create"></div>
-      <div class="qr_child">
+      <div class="qr_child qr_scan">
         <video id=video></video>
       </div>
       <div class="qr_overlay" style="display:none;"></div>
