@@ -79,7 +79,7 @@
           } else console.log('already loaded');
           let video = document.querySelector("video");
           const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)}; // qrerror
-          const cfg = {preferredCamera: 'user', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
+          const cfg = {preferredCamera: 'environment', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
           let chunks = [], numRead = 0, action, first = true;
           const qrScan = new QRScanner(video, async result => { // ret = (type, data) => handler(type, data);
             let data = result.data, index = data.indexOf("@");
