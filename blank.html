@@ -39,7 +39,7 @@
             light: "#ffffff"
           },
           version: 15
-        };
+        },
         qrcreate: async (resolve, command, message) => {
           const create = async message => {
             let qrString = await QRCode.toString(message, state.qrCfg);
