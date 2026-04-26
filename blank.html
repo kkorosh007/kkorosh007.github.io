@@ -32,10 +32,10 @@
           const create = async message => {
             let qrString = await QRCode.toString(message, {
               type: "svg",
-              scale: 4,
-              errorCorrectionLevel: "H",
+              scale: 1,
+              errorCorrectionLevel: "M",
               margin: 4,
-              width: 600,
+              //width: 600,
               color: {
                 dark: "#000000",
                 light: "#ffffff"
