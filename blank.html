@@ -85,7 +85,7 @@
             pos = (pos + 1) % noOfMessages;
             document.querySelector('.qr_create').innerHTML = qrString;
             if (state.msgSegments.stop) clearInterval(interval);
-          }, 100);
+          }, 50);
         },
         qrscan: async resolve => {
           if (typeof(QRScanner) == 'undefined') {
