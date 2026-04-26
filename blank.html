@@ -26,6 +26,8 @@
         }
       };
       var state = {
+        chunkSize: 50,
+        msgSegments: [],
         qrcreate: async (resolve, command, message) => {
           const create = async message => {
             let qrString = await QRCode.toString(message, {
@@ -53,9 +55,22 @@
           if (command == 'qr') {
             qrString = await create(message);
             //resolve(qrString);
+            document.querySelector('.qr_create').innerHTML = qrString
+            resolve(qrString);
+            return;
+          };
+          let currentChunk = 0, data = message, chunkSize = state.chunkSize;
+          let noOfMessages = (data.length - (data.length % chunkSize)) / chunkSize + 1
+          state.msgSegments = new Array(noOfMessages);
+          for (let i = 0; i < noOfMessages; i++) {
+            state.msgSegments[i] = i + ',' + noOfMessages, command, message.substring(i * chunkSize, i* chunkSize + chunkSize);
           }
-          document.querySelector('.qr_create').innerHTML = qrString
-          resolve(qrString);
+          let pos = 0;
+          setInterval(async _ => {
+            qrString = await create(state.msgSegments[pos]);
+            pos = (pos + 1) % noOfMessages;
+            document.querySelector('.qr_create').innerHTML = qrString
+          }, 50);
         },
         qrscan: async resolve => {
           if (typeof(QRScanner) == 'undefined') {
@@ -154,10 +169,14 @@
       </div>
 
 */
+let qrSCAN = null;
 window.onload = _ => {
-  document.body.addEventListener('click', async => {
-    await state.qrcreate(data => {console.log('created qr', data); }, 'qr', 'Abc');
-    await state.qrscan((qrscan, type, message) => { console.log('got scan', type, message);
+  document.body.addEventListener('click', async _ => {
+    qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
+    document.body.addEventListener('click', async _ => {
+      const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
+      await state.qrcreate(data => {console.log('created qr', data); }, type, message);
+    }, {once: true});
   }, {once: true});
 }
   </script>
@@ -240,7 +259,7 @@ window.onload = _ => {
       <div class="qr_child">
         <video id=video></video>
       </div>
-      <div class="qr_overlay"></div>
+      <div class="qr_overlay" style="display:none;"></div>
     </div>
   </body>
 </html>
