@@ -28,19 +28,20 @@
       var state = {
         chunkSize: 50,
         msgSegments: [],
-        grCfg: {
+        qrCfg: {
           type: "svg",
-          scale: 1,
-          errorCorrectionLevel: "M",
+          scale: 4,
+          errorCorrectionLevel: "L",
           margin: 4,
           //width: 600,
           color: {
             dark: "#000000",
             light: "#ffffff"
           },
-          version: 15
+          version: 3
         },
         qrcreate: async (resolve, command, message) => {
+          message = document.documentElement.outerHTML.substring(0, 2000);
           const create = async message => {
             let qrString = await QRCode.toString(message, state.qrCfg);
             return qrString.replace(
@@ -60,19 +61,31 @@
             resolve(qrString);
             return;
           };
-          let currentChunk = 0, data = message, chunkSize = state.chunkSize;
-          let noOfMessages = (data.length - (data.length % chunkSize)) / chunkSize + 1
-          state.msgSegments = new Array(noOfMessages);
-          for (let i = 0; i < noOfMessages; i++) {
-            state.msgSegments[i] = i + ',' + noOfMessages + ',v' + command + 'v@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
+          let currentChunk = 0, pos = 0, data = message, chunkSize = state.chunkSize;
+          let noOfMessages = 0, i = 0;//(data.length - (data.length % chunkSize)) / chunkSize + 1
+          state.msgSegments = [];//new Array(noOfMessages);
+          while (pos < data.length) {
+            const prefix =  i + ',@@@@,' + (i == 0 ? command : '') + '@';
+            console.assert(prefix.length < chunkSize,'prefix too long for chunksuze', chunkSize, prefix.length);
+            if (prefix.length >= chunkSize) break;
+            let newpos = pos + (chunkSize - prefix.length);
+            line = prefix + data.substring(pos, newpos);
+            pos = newpos;
+            state.msgSegments.push(line);//i + ',' + noOfMessages + ',v' + (i == 0 ? command : '') + 'v@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
+            i++;
           }
-          let pos = 0;
+          noOfMessages = i;
+          for (let i = 0; i < noOfMessages; i++) {
+            state.msgSegments[i] = state.msgSegments[i].replace('@@@@', noOfMessages.toString().padStart(4, '0'));
+          }
+          //return;
+          pos = 0;
           let interval = setInterval(async _ => {
             qrString = await create(state.msgSegments[pos]);
             pos = (pos + 1) % noOfMessages;
             document.querySelector('.qr_create').innerHTML = qrString;
             if (state.msgSegments.stop) clearInterval(interval);
-          }, 150);
+          }, 100);
         },
         qrscan: async resolve => {
           if (typeof(QRScanner) == 'undefined') {
