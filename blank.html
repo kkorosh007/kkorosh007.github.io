@@ -13,58 +13,6 @@
     <link rel="icon" href="data:,">
     <meta name="google" content="notranslate"/>
     <style>
-      html {
-        font-size: 16px;
-        height: calc(100% - 4rem);
-        padding: 2rem;
-        background-color: black;
-        color: white;
-      }
-      body {
-        position: relative;
-        display: grid;
-        &>* {
-          grid-row: 1;
-          grid-column: 1;
-          align-self: center;
-          justify-self: center;
-        }
-        font-size: 1.2rem;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-      body:not([style*="--iframe"]) > * {
-        display: none;
-      }
-      .scanner {
-        display: grid;
-        &>* {
-          grid-row: 1;
-          grid-column: 1;
-          align-self: center;
-          justify-self: center;
-        }
-        align-self: center;
-        justify-self: center;
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-      .scanner > video {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        object-fit: contain;
-        object-position: center;
-      }
-      svg {
-        width: 80%;
-        height: 80%;
-        display: block;
-      }
     </style>
     <script>
       {
@@ -106,7 +54,7 @@
             qrString = await create(message);
             //resolve(qrString);
           }
-          document.querySelector('.create').innerHTML = qrString
+          document.querySelector('.qr_create').innerHTML = qrString
           resolve(qrString);
         },
         qrscan: async resolve => {
@@ -116,7 +64,7 @@
           } else console.log('already loaded');
           let video = document.querySelector("video");
           const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)}; // qrerror
-          const cfg = {onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
+          const cfg = {preferredCamera: 'user', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
           let chunks = [], numRead = 0, action, first = true;
           const qrScan = new QRScanner(video, async result => { // ret = (type, data) => handler(type, data);
             let data = result.data, index = data.indexOf("@");
@@ -193,18 +141,107 @@
           document.documentElement.appendChild(code);
         };
       }
-    </script>
-  </head>
-  <body>
-    <div class="scanner" sstyle="--iframe: 1">
-      <video id=video></video>
-      <div class="create scanner"></div>
-      <div style="padding: 1rem; flex-direction: column; display: flex; width: fit-content; height: auto; border: 1px solid yellow;place-self: center; gap: 1rem;">
+/*
+      <div class="scanner qr_scan">
+        <video id=video></video>
+      </div>
+      <div class="create qr_create"></div>
+      <div class="qr_menu" style="padding: 1rem; flex-direction: column; display: flex; width: fit-content; height: auto; border: 1px solid yellow;place-self: center; gap: 1rem;">
         <h3 style=" margin: 0; text-align: center; line-height: 1;">QR Create</h3>
         <button>Ready</button>
         <button>Feedback</button>
         <button>Cancel</button>
       </div>
+
+*/
+window.onload = _ => {
+  document.body.addEventListener('click', async => {
+    await state.qrcreate(data => {console.log('created qr', data); }, 'qr', 'Abc');
+    await state.qrscan((qrscan, type, message) => { console.log('got scan', type, message);
+  }, {once: true});
+}
+  </script>
+  <style>
+    html {
+      font-size: 16px;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+    }
+    body {
+      --percent: 50%;
+      gap: 5rem;
+      position: relative;
+      display: block;
+      font-size: 1.2rem;
+      width: calc(100% - 4rem);
+      height: calc(100% - 4rem);
+      grid-template-columns: 1fr 1fr;
+      margin: 0;
+      padding: 2rem;
+      &>* {
+        align-self: center;
+        justify-self: center;
+      }
+    }
+    svg, video {
+      width: 100%;
+      height: 100%;
+    }
+    svg[class="scan-region-highlight-svg"] {
+      stroke: green !important; 
+      stroke-width: 10 !important;
+    }
+    .scan-region-highlight > svg[class="code-outline-highlight"] {
+      stroke: lime !important;
+    }
+    .qr_container {
+      position: relative;
+      display: grid;
+      grid-template-columns: calc(100% - var(--percent)) calc(var(--percent) - 1rem);
+      grid-template-rows: 1fr;
+      width: 100%;
+      height: 100%;
+      gap: 1rem;
+    }
+    .qr_container > .qr_child {
+      overflow: hidden;
+      overflow-wrap: break-word;
+      padding: 0;
+      border: 1px solid #ccc;
+    }
+    .qr_overlay {
+      grid-column: 1 / -1;
+      grid-row: 1 / -1;
+      background-color: rgba(255, 0, 0, .7);
+      position: absolute;
+      inset: 20%;
+    }
+    .tit {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+      &>:nth-child(2) {
+        display: none;
+      }
+    }
+    @media (max-aspect-ratio: 1/1) {
+      .qr_container {
+        grid-template-columns: 1fr;
+        grid-template-rows: calc(100% - var(--percent)) calc(var(--percent) - 1rem)
+      }
+    }
+  </style>
+  </head>
+  <body>
+    <div class="qr_container">
+      <div class="qr_child qr_create"></div>
+      <div class="qr_child">
+        <video id=video></video>
+      </div>
+      <div class="qr_overlay"></div>
     </div>
   </body>
 </html>
+
