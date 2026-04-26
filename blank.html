@@ -63,7 +63,7 @@
           let noOfMessages = (data.length - (data.length % chunkSize)) / chunkSize + 1
           state.msgSegments = new Array(noOfMessages);
           for (let i = 0; i < noOfMessages; i++) {
-            state.msgSegments[i] = i + ',' + noOfMessages, command, message.substring(i * chunkSize, i* chunkSize + chunkSize);
+            state.msgSegments[i] = i + ',' + noOfMessages + ',' + command + '@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
           }
           let pos = 0;
           setInterval(async _ => {
@@ -83,12 +83,12 @@
           let chunks = [], numRead = 0, action, first = true;
           const qrScan = new QRScanner(video, async result => { // ret = (type, data) => handler(type, data);
             let data = result.data, index = data.indexOf("@");
-            if (index == -1) return resolve(qrScan, 'qrmessage', data);
+            if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
             let meta = data.substring(0, index), args = meta.split(",");
             data = data.substring(index); 
-            if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage', data);
+            if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
             let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
-            if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage', data);
+            if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage3', result.data);
             if (noOfChunks != chunks.length) {
               chunks = new Array(noOfChunks);
               numRead = 0;
