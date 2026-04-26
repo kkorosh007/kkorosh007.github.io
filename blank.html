@@ -63,14 +63,14 @@
           let noOfMessages = (data.length - (data.length % chunkSize)) / chunkSize + 1
           state.msgSegments = new Array(noOfMessages);
           for (let i = 0; i < noOfMessages; i++) {
-            state.msgSegments[i] = i + ',' + noOfMessages + ',' + command + '@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
+            state.msgSegments[i] = i + ',' + noOfMessages + ',v' + command + 'v@' +  message.substring(i * chunkSize, i* chunkSize + chunkSize);
           }
           let pos = 0;
           setInterval(async _ => {
             qrString = await create(state.msgSegments[pos]);
             pos = (pos + 1) % noOfMessages;
             document.querySelector('.qr_create').innerHTML = qrString
-          }, 50);
+          }, 150);
         },
         qrscan: async resolve => {
           if (typeof(QRScanner) == 'undefined') {
@@ -100,7 +100,7 @@
             if (numRead == noOfChunks) {
               console.log("got ACTION", action);
               qrScan.stop();
-              qrScan = null;
+              //qrScan = null;
               setTimeout(_ => {
                 const message = chunks.splice(0, noOfChunks).join("");
                 chunks = new Array();
