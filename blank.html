@@ -102,8 +102,9 @@
           //alert('exiting');
           //try {window.close();} catch(e){alert('no' + e.message)};
         //} else {
-        window.addEventListener("orientationchange", async (event) => window.dispatchEvent(new Event('resize')));
-          let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
+          window.addEventListener("orientationchange", async (event) => window.dispatchEvent(new Event('resize')));
+          var qrSCAN = null
+          let g = HTMLCanvasElement.prototype.getContext;
           if(!g.dummy){
             HTMLCanvasElement.prototype.getContext=function(t,o={}){
               if(t==="2d")o={willReadFrequently:true,...o};
