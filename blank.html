@@ -90,7 +90,7 @@
       {
         if (document.location.search == '?asd=8') {
           alert('exiting');
-          window.close();
+          try {window.close();} catch(e){alert('no' + e.message)};
         } else {
           let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
           if(!g.dummy){
