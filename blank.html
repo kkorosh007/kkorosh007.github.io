@@ -201,7 +201,15 @@
               qrScan.start();
               return qrScan;
             },
+            show: (content, handler) => {
+              state.handler = handler
+              const overlay = document.querySelector('.qr_overlay');
+              overlay.style.display = 'grid';
+              overlay.innerHTML = content;
+            },
             clear: _ => {
+              delete state.handler;
+              overlay.style.display = 'none';
               state.msgSegments.stop = 1;
               if (qrSCAN) {
                 qrSCAN.stop();
