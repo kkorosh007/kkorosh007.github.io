@@ -209,7 +209,7 @@
             },
             clear: _ => {
               delete state.handler;
-              overlay.style.display = 'none';
+              document.querySelector('.qr_overlay').style.display = 'none';
               state.msgSegments.stop = 1;
               if (qrSCAN) {
                 qrSCAN.stop();
