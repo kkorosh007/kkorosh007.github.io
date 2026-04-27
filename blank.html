@@ -91,166 +91,166 @@
         if (document.location.search == '?asd=8') {
           alert('exiting');
           window.close();
-          return;
-        }
-        let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
-        if(!g.dummy){
-          HTMLCanvasElement.prototype.getContext=function(t,o={}){
-            if(t==="2d")o={willReadFrequently:true,...o};
-            return g.call(this,t,o);
-          };
-          HTMLCanvasElement.prototype.getContext.dummy=1;
-        }
-        const state = {
-          chunkSize: 50,
-          msgSegments: [],
-          qrCfg: {
-            type: "svg",
-            scale: 4,
-            errorCorrectionLevel: "L",
-            margin: 4,
-            //width: 600,
-            color: {
-              dark: "#000000",
-              light: "#ffffff"
+        } else {
+          let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
+          if(!g.dummy){
+            HTMLCanvasElement.prototype.getContext=function(t,o={}){
+              if(t==="2d")o={willReadFrequently:true,...o};
+              return g.call(this,t,o);
+            };
+            HTMLCanvasElement.prototype.getContext.dummy=1;
+          }
+          const state = {
+            chunkSize: 50,
+            msgSegments: [],
+            qrCfg: {
+              type: "svg",
+              scale: 4,
+              errorCorrectionLevel: "L",
+              margin: 4,
+              //width: 600,
+              color: {
+                dark: "#000000",
+                light: "#ffffff"
+              },
+              version: 3
             },
-            version: 3
-          },
-          qrcreate: async (resolve, command, message) => {
-            document.querySelector('.qr_scan').style.display = 'none';
-            document.querySelector('.qr_create').style.display = '';
-            message = document.documentElement.outerHTML.substring(0, parseInt(message));
-            const create = async message => {
-              let qrString = await QRCode.toString(message, state.qrCfg);
-              return qrString.replace("<svg", '<svg preserveAspectRatio="xMidYMid meet"');
-            };
-            if (typeof(QRCode) == 'undefined') await runScript("/3rd-party/qrcode.min.js");
-            let qrString = '';
-            if (command == 'qr') {
-              qrString = await create(message);
-              document.querySelector('.qr_create').innerHTML = qrString
-              resolve(qrString);
-              return;
-            };
-            let currentChunk = 0, pos = 0, data = message, chunkSize = state.chunkSize, noOfMessages = 0, i = 0;
-            state.msgSegments = [];
-            while (pos < data.length) {
-              const prefix =  i + ',@@@@,' + (i == 0 ? command : '') + '@';
-              console.assert(prefix.length < chunkSize,'prefix too long for chunksuze', chunkSize, prefix.length);
-              if (prefix.length >= chunkSize) {
-                i = -1;
-                break;
-              }
-              let newpos = pos + (chunkSize - prefix.length);
-              line = prefix + data.substring(pos, newpos);
-              pos = newpos;
-              state.msgSegments.push(line);
-              i++;
-            }
-            if (i == -1) return;
-            noOfMessages = i;
-            for (let i = 0; i < noOfMessages; i++) {
-              state.msgSegments[i] = state.msgSegments[i].replace('@@@@', noOfMessages.toString().padStart(4, '0'));
-            }
-            pos = 0;
-            let interval = setInterval(async _ => {
-              qrString = await create(state.msgSegments[pos]);
-              pos = (pos + 1) % noOfMessages;
-              document.querySelector('.qr_create').innerHTML = qrString;
-              if (state.msgSegments.stop) clearInterval(interval);
-            }, 100);
-          },
-          qrscan: async resolve => {
-            document.querySelector('.qr_scan').style.display = '';
-            document.querySelector('.qr_create').style.display = 'none';
-            if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
-            let video = document.querySelector("video");
-            const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
-            const cfg = {preferredCamera: 'environment', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
-            let chunks = [], numRead = 0, action, first = true;
-            const qrScan = new QRScanner(video, async result => {
-              let data = result.data, index = data.indexOf("@");
-              if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
-              let meta = data.substring(0, index), args = meta.split(",");
-              data = data.substring(index); 
-              if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
-              let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
-              if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage3', result.data);
-              if (noOfChunks != chunks.length) {
-                chunks = new Array(noOfChunks);
-                numRead = 0;
-              }
-              if (chunks[pos]) return;
-              numRead++;
-              chunks[pos] = data;
-              if (pos == 0) action = command;
-              if (numRead == noOfChunks) {
-                console.log("got ACTION", action);
-                qrScan.stop();
-                setTimeout(_ => {
-                  const message = chunks.splice(0, noOfChunks).join("");
-                  chunks = new Array();
-                  numRead = 0;
-                  console.log('got coded message', action, message);
-                  return resolve(qrScan, action, data);
-                }, 0);
-              } else console.log('Input', noOfChunks, numRead, pos);
-            }, cfg);
-            qrScan.start();
-            return qrScan;
-          }
-        };
-        const runScript = async (src, type = 'url') => new Promise(resolve => {
-          const code = document.createElement("script");
-          const remove = _ => {
-            let sc = document.scripts[document.scripts.length - 1];
-            sc.parentElement.removeChild(sc);
-          }
-          if (type == 'url') {
-            code.addEventListener('load',  _ => remove(resolve('loaded')), {once: true});
-            code.addEventListener('error', _ => remove(resolve({type: 'error', stack: e})), {once: true});
-            code.src = src;
-          } else  {
-            code.resolve = resolve;
-            code.textContent = src + `
-              {
-                const script = document.scripts[document.scripts.length -1];
-                const resolve = script.resolve;
-                delete script.resolve;
-                script.parentElement.removeChild(script);
-                resolve('loaded');
-              }`;
-            setTimeout(_ => resolve({type: 'error', stack: 'UNKNOWN'}), 100);
-          }
-          document.documentElement.appendChild(code);
-        });
-        window.onload = _ => {
-          document.querySelector('.qr_scan').addEventListener('click', async _ => {
-            if (qrSCAN) qrSCAN.stop();
-            qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
-          }, {once: true});
-          document.querySelector('.qr_create').addEventListener('click', async _ => {
-            state.msgSegments.stop = 1
-            const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
-            setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
-          });
-        };
-        try {
-          const channel = new BroadcastChannel("page-check"), channelId = crypto.randomUUID();
-          channel.onmessage = (e) => {
-            try {
-              if (e.data.id == channelId) return;
-              if (e.data.command == 'stop') window.close();
-              else if (e.data.command == 'start') {
-                channel.postMessage({id: channelId, command: 'stop', url: document.location.href});
-                alert('got url' + e.data.url);
+            qrcreate: async (resolve, command, message) => {
+              document.querySelector('.qr_scan').style.display = 'none';
+              document.querySelector('.qr_create').style.display = '';
+              message = document.documentElement.outerHTML.substring(0, parseInt(message));
+              const create = async message => {
+                let qrString = await QRCode.toString(message, state.qrCfg);
+                return qrString.replace("<svg", '<svg preserveAspectRatio="xMidYMid meet"');
               };
-              xx = e;
-              console.log('incoming message',  channelId, e.data);
-            }catch(e) {alert('errorA' + e.message);}
+              if (typeof(QRCode) == 'undefined') await runScript("/3rd-party/qrcode.min.js");
+              let qrString = '';
+              if (command == 'qr') {
+                qrString = await create(message);
+                document.querySelector('.qr_create').innerHTML = qrString
+                resolve(qrString);
+                return;
+              };
+              let currentChunk = 0, pos = 0, data = message, chunkSize = state.chunkSize, noOfMessages = 0, i = 0;
+              state.msgSegments = [];
+              while (pos < data.length) {
+                const prefix =  i + ',@@@@,' + (i == 0 ? command : '') + '@';
+                console.assert(prefix.length < chunkSize,'prefix too long for chunksuze', chunkSize, prefix.length);
+                if (prefix.length >= chunkSize) {
+                  i = -1;
+                  break;
+                }
+                let newpos = pos + (chunkSize - prefix.length);
+                line = prefix + data.substring(pos, newpos);
+                pos = newpos;
+                state.msgSegments.push(line);
+                i++;
+              }
+              if (i == -1) return;
+              noOfMessages = i;
+              for (let i = 0; i < noOfMessages; i++) {
+                state.msgSegments[i] = state.msgSegments[i].replace('@@@@', noOfMessages.toString().padStart(4, '0'));
+              }
+              pos = 0;
+              let interval = setInterval(async _ => {
+                qrString = await create(state.msgSegments[pos]);
+                pos = (pos + 1) % noOfMessages;
+                document.querySelector('.qr_create').innerHTML = qrString;
+                if (state.msgSegments.stop) clearInterval(interval);
+              }, 100);
+            },
+            qrscan: async resolve => {
+              document.querySelector('.qr_scan').style.display = '';
+              document.querySelector('.qr_create').style.display = 'none';
+              if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
+              let video = document.querySelector("video");
+              const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
+              const cfg = {preferredCamera: 'environment', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
+              let chunks = [], numRead = 0, action, first = true;
+              const qrScan = new QRScanner(video, async result => {
+                let data = result.data, index = data.indexOf("@");
+                if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
+                let meta = data.substring(0, index), args = meta.split(",");
+                data = data.substring(index); 
+                if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
+                let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
+                if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage3', result.data);
+                if (noOfChunks != chunks.length) {
+                  chunks = new Array(noOfChunks);
+                  numRead = 0;
+                }
+                if (chunks[pos]) return;
+                numRead++;
+                chunks[pos] = data;
+                if (pos == 0) action = command;
+                if (numRead == noOfChunks) {
+                  console.log("got ACTION", action);
+                  qrScan.stop();
+                  setTimeout(_ => {
+                    const message = chunks.splice(0, noOfChunks).join("");
+                    chunks = new Array();
+                    numRead = 0;
+                    console.log('got coded message', action, message);
+                    return resolve(qrScan, action, data);
+                  }, 0);
+                } else console.log('Input', noOfChunks, numRead, pos);
+              }, cfg);
+              qrScan.start();
+              return qrScan;
+            }
           };
-          channel.postMessage({id: channelId, command: 'start', url: document.location.href});
-        }catch(e) {alert('errorB' + e.message);}
+          const runScript = async (src, type = 'url') => new Promise(resolve => {
+            const code = document.createElement("script");
+            const remove = _ => {
+              let sc = document.scripts[document.scripts.length - 1];
+              sc.parentElement.removeChild(sc);
+            }
+            if (type == 'url') {
+              code.addEventListener('load',  _ => remove(resolve('loaded')), {once: true});
+              code.addEventListener('error', _ => remove(resolve({type: 'error', stack: e})), {once: true});
+              code.src = src;
+            } else  {
+              code.resolve = resolve;
+              code.textContent = src + `
+                {
+                  const script = document.scripts[document.scripts.length -1];
+                  const resolve = script.resolve;
+                  delete script.resolve;
+                  script.parentElement.removeChild(script);
+                  resolve('loaded');
+                }`;
+              setTimeout(_ => resolve({type: 'error', stack: 'UNKNOWN'}), 100);
+            }
+            document.documentElement.appendChild(code);
+          });
+          window.onload = _ => {
+            document.querySelector('.qr_scan').addEventListener('click', async _ => {
+              if (qrSCAN) qrSCAN.stop();
+              qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
+            }, {once: true});
+            document.querySelector('.qr_create').addEventListener('click', async _ => {
+              state.msgSegments.stop = 1
+              const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
+              setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
+            });
+          };
+          try {
+            const channel = new BroadcastChannel("page-check"), channelId = crypto.randomUUID();
+            channel.onmessage = (e) => {
+              try {
+                if (e.data.id == channelId) return;
+                if (e.data.command == 'stop') window.close();
+                else if (e.data.command == 'start') {
+                  channel.postMessage({id: channelId, command: 'stop', url: document.location.href});
+                  alert('got url' + e.data.url);
+                };
+                xx = e;
+                console.log('incoming message',  channelId, e.data);
+              }catch(e) {alert('errorA' + e.message);}
+            };
+            channel.postMessage({id: channelId, command: 'start', url: document.location.href});
+          }catch(e) {alert('errorB' + e.message);}
+        }
       }
     </script>
   </head>
