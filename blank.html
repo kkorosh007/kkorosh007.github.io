@@ -234,7 +234,7 @@
         channel.onmessage = (e) => {
           if (e.data.command == 'stop') window.close();
           else if (e.data.command == 'start') channel.postMessage({command: 'stop', url: document.location.href});
-          console.log('incoming message', e.data);
+          alert('incoming message' +  e.data.url);
         };
         channel.postMessage({command: 'start', url: document.location.href});
       }
