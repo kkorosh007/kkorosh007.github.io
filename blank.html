@@ -237,6 +237,7 @@
             channel.postMessage({command: 'stop', url: document.location.href});
             alert('got ur;' + e.data.url);
           };
+          xx = e;
           console.log('incoming message',  e.data);
         };
         channel.postMessage({command: 'start', url: document.location.href});
