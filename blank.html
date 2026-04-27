@@ -68,9 +68,18 @@
       .qr_overlay {
         grid-column: 1 / -1;
         grid-row: 1 / -1;
-        background-color: rgba(255, 0, 0, .7);
+        background-color: rgba(0, 0, 0, .7);
         position: absolute;
         inset: 20%;
+        gap: 1rem;
+        border: 1px solid white;
+        border-radius: 5px;
+        padding: .5rem;
+        & > *:nth-child(1) {
+          background-color: black;
+          justify-self: center;
+          align-self: center;
+        }
       }
       .tit {
         grid-template-columns: 1fr;
@@ -118,7 +127,7 @@
             qrcreate: async (resolve, command, message) => {
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
-              message = document.documentElement.outerHTML.substring(0, parseInt(message));
+              if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
                 let qrString = await QRCode.toString(message, state.qrCfg);
                 return qrString.replace("<svg", '<svg preserveAspectRatio="xMidYMid meet"');
@@ -171,7 +180,7 @@
               const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
               const cfg = {preferredCamera: 'environment', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
               let chunks = [], numRead = 0, action, first = true;
-              const qrScan = new QRScanner(video, async result => {
+              const qrScan = qrSCAN = new QRScanner(video, async result => {
                 let data = result.data, index = data.indexOf("@");
                 if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
                 let meta = data.substring(0, index), args = meta.split(",");
@@ -208,7 +217,7 @@
               overlay.style.display = 'grid';
               overlay.innerHTML = content;
             },
-            clear: _ => {
+            clear: (remove = false) => {
               delete state.handler;
               document.querySelector('.qr_overlay').style.display = 'none';
               state.msgSegments.stop = 1;
@@ -216,6 +225,10 @@
                 qrSCAN.stop();
                 qrSCAN.destroy();
                 qrSCAN = null;
+              };
+              if (remove) {
+                const iframe = window.parent.document.querySelector('iframe');
+                iframe.parentElement.removeChild(iframe);
               };
             }
           };
@@ -244,6 +257,12 @@
             document.documentElement.appendChild(code);
           });
           window.onload = _ => {
+            document.documentElement.addEventListener('pointerdown', _ => {
+              const ref = document.querySelector('.qr_overlay');
+              if (ref.style.display == 'none') ref.style.display = 'grid';
+              else ref.style.display = ' none'; 
+            });
+            return;
             document.querySelector('.qr_scan').addEventListener('click', async _ => {
               if (qrSCAN) qrSCAN.stop();
               qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));

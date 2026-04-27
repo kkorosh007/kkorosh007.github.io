@@ -89,6 +89,242 @@
         }
       };
       //{
+        const makeCall = async to => {
+          let peers = new Map();
+          peers = ChatRoom('peter', false, peers, {trickleIce: false, sendMessage: async msg => {
+            const iframe = await iframeView();
+            iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
+              <div style="font-size: 1.5rem">Sending Offer</div>
+              <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
+                Scan Reply
+              </button>
+              <button onpointerdown="state.clear(true);">Exit</button>
+            `;
+            iframe.contentWindow.state.qrcreate(_ => _, 'SDP', JSON.stringify(msg));
+          }});
+          await peers.makeCall('mary')
+        };
+        const acceptOffer = async id => {
+          const iframe = await iframeView();console.log('adasdas')
+          iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
+            <div style="font-size: 1.5rem">Scan</div>
+            <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
+              Scan Reply
+            </button>
+            <button onpointerdown="state.clear(true);">Exit</button>
+          `;
+          iframe.contentWindow.state.qrscan((qrscan, message) => { console.log('got scan', message)});
+        };
+
+        const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
+          console.log('sending', msg);
+          if (!httpListen) {
+            const id = msg.to;
+            xxx = msg;
+            msg = new URLSearchParams({ id, msg: (JSON.stringify(msg)) }).toString();
+            const div1 = document.body.appendChild(document.createElement('div'));
+            div1.style.cssText = 'background-color: rgba(30, 30, 30, .7); color: white; position: absolute; display: grid; place-items: center; left: 0px; top:0px; width: 100%; height: 100%;';
+            div1.innerText = 'Click to connect';
+            console.log('adding div');
+            div1.addEventListener('click', _ => {
+              const www = window.open('http://192.168.1.119:8000/send?autoanswer=1#' + encodeURIComponent(msg), 'dspatcher');
+              window.addEventListener('message', (event) => {
+                document.body.removeChild(div1);
+                peers.get(id).receiveMessage(JSON.parse(event.data.message));
+              }, {once: true});
+            }, {once: true});
+          } else await fetch(`send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
+        }}) => {
+          const rTime = (i, d = new Date(i)) => String(d.getHours()).padStart(2, '0') + ':' +
+            String(d.getMinutes()).padStart(2, '0') + ':' +
+            String(d.getSeconds()).padStart(2, '0') + ':' +
+            String(d.getMilliseconds()).padStart(3, '0');
+          const createPeer = (peerId, signal) => {
+            let makingOffer = false;
+            //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
+            const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [], bundlePolicy: 'max-bundle' });
+            pc.remoteCommand = new Map();
+            const v = pc.v = document.createElement('video');
+            pc.signal = signal;
+            pc.trickleIce = signal.trickleIce ?? true;
+            pc.ontrack = event => {
+              const stream = event.streams[0] ?? new MediaStream([event.track]);
+              v.srcObject = stream;
+            };
+            pc.onicecandidate = e => {
+              const candidate = e.candidate;
+              console.log('Ice candidate', rTime(performance.timeOrigin + performance.now()), e);
+              if ((pc.trickleIce && candidate)) {
+                pc.signal.sendMessage({from: clientId, to: peerId, type: 'SDP', sdp: { candidate }})
+              }
+            }
+            pc.onicegatheringstatechange = async event => {
+              if (!pc.trickleIce && pc.iceGatheringState === 'complete') {
+                console.log('ice gathering state', pc.iceGatheringState);
+                signal.sendMessage({from: clientId, to: peerId, type: 'SDP', sdp: {description: pc.localDescription}});
+                pc.trickleIce = true;
+              }
+            };
+            pc.onnegotiationneeded = async e => {
+              makingOffer = true;
+              await pc.setLocalDescription();
+              if (pc.trickleIce) pc.signal.sendMessage({from: clientId, to: peerId, type: 'SDP', sdp: {description: pc.localDescription}});
+              makingOffer = false;
+            };
+            pc.onconnectionstatechange = _ => {
+              const state = pc.connectionState;
+              if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+                pc.dc.close();
+                peers.delete(peerId);
+                pc.onconnectionstatechange = null;
+              } else console.log('onconnectionstatechange', clientId, peerId, state);
+            };
+            pc.ondatachannel = event => {
+              let dc = pc.dc = event.channel;
+              dc.binaryType = 'arraybuffer';
+              dc.onopen = _ => {
+                pc.signal = signal = {
+                  sendMessage: msg => {
+                    console.log('DC Signaling', pc.trickleIce, clientId, peerId, msg);
+                    pc.dc.send(JSON.stringify(msg));
+                  }
+                };
+              };
+              dc.addEventListener('message', e => pc.receiveMessage(JSON.parse(e.data)));
+            };
+            pc.receiveMessage = async msg => {
+              if (msg.type && msg.to != clientId) {
+                if (msg.type == 'CALL') return createPeer(msg.to, pc.signal).makeCall(msg.to);
+                if (msg.to != peerId && peers.has(msg.to)) peers.get(msg.to).signal.sendMessage(msg);
+                else console.error('error cannot find peer to send message to', clientId, peerId, msg);
+              } else {
+                if (msg.type === 'SDP') {
+                  if (msg.sdp.description) {
+                    const description = msg.sdp.description, offerCollision = description.type === 'offer' && (makingOffer || pc.signalingState !== 'stable')
+                    if (!(msg.to < msg.from) && offerCollision) return
+                    const peer = peers.has(msg.from) ? peers.get(msg.from) : createPeer(msg.from, pc.signal);
+                    await peer.setRemoteDescription(description);
+                    if (description.type === 'offer') {
+                      await peer.setLocalDescription();
+                      if (pc.trickleIce) signal.sendMessage({from: clientId, to: peerId, type: 'SDP', sdp: {description: peer.localDescription}});
+                    };
+                  } else await pc.addIceCandidate(msg.sdp.candidate);
+                } else userHandler(msg);
+              }
+            };
+            peers.clientId = clientId;
+            peers.set(peerId, pc);
+            return pc;
+          };
+          const remoteCall = (peerId, ...command) => new Promise(resolve => {
+            const name = command[0];
+            command = {msg: {func: name, args: command.slice(1)}, type: 'command', from: clientId, to: peerId};
+            peers.get(peerId).remoteCommand.set(name, resolve);
+            peers.get(peerId).signal.sendMessage(command);
+          });
+          const enumCameras = async () => {
+            const closeStream = stream => stream.getTracks().forEach(t => t.stop()), tmp = await navigator.mediaDevices.getUserMedia({ video: true });
+            closeStream(tmp);
+            const devices = await navigator.mediaDevices.enumerateDevices(), cameras = [];
+            cameras.currentIndex = -1;
+            for (const device of devices) {
+              if (device.kind === 'videoinput') {
+                try {
+                  const stream = await navigator.mediaDevices.getUserMedia({video: { deviceId: { exact: device.deviceId } }});
+                  const track = stream.getVideoTracks()[0];
+                  cameras.push({id: device.deviceId, label: device.label, settings: track.getSettings(), capabilities: track.getCapabilities()});
+                  closeStream(stream);
+                } catch (e) {}
+              }
+            }
+            cameras.currentIndex = cameras.length ? 0 : -1;
+            return cameras;
+          };
+          const makeCall = async peerId => {
+            const pc = createPeer(peerId, signaling);
+            pc.ondatachannel({channel: pc.createDataChannel('chat')});
+          };
+          const userHandler = async msg => {
+            if (msg.type == 'command') {
+              const command = msg.msg;
+              if (command.result) {
+                const handler = peers.get(msg.from).remoteCommand.get(command.func);
+                peers.get(msg.from).remoteCommand.delete(command.func);
+                handler(command.result);
+              } else {
+                command.result = await peers[command.func](...command.args);
+                if (command.result == undefined) command.result = {};
+                msg.msg = command;
+                const ref = peers.get(msg.from), t = msg.from;
+                msg.from = msg.to;
+                msg.to = t;
+                ref.signal.sendMessage(msg);
+              };
+            } else console.log('userHandler got',clientId, msg);
+          };
+          const listenForMessages = async (peerId, sessionId) => {
+            const response = await fetch(`/stream?id=${peerId}&session=${sessionId}`);
+            const reader = response.body.getReader(), decoder = new TextDecoder('utf-8');
+            while (true) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              const chunk = decoder.decode(value, { stream: true });
+              let msg = '';
+              try { msg = JSON.parse(chunk); } catch(e) {continue};
+              if (peers.has(msg.from)) await peers.get(msg.from).receiveMessage(msg);
+              else await createPeer(msg.from, signaling).receiveMessage(msg);
+            };
+          };
+          if (httpListen) listenForMessages(clientId, clientId + '-123');
+          peers.cameras = [];
+          peers.activeStream = null;
+          peers.createPeer = createPeer;
+          peers.makeCall = makeCall;
+          peers.remoteCall = remoteCall;
+          peers.enumCameras = enumCameras;
+          peers.applyConstraints = async (trackKind, constraint) => {
+            const track = trackKind == 'video' ? peers.activeStream.getVideoTracks()[0] : peers.activeStream.getAudioTracks()[0];
+            return await track.applyConstraints(constraint);
+          }
+          peers.getSettings = trackKind => {
+            try {
+              const track = trackKind == 'video' ? peers.activeStream.getVideoTracks()[0] : peers.activeStream.getAudioTracks()[0];
+              return track.getSettings()
+            } catch (e) {return e.message}
+          }
+          peers.sendVideo = async (id, index) => {
+            if (peers.cameras.length == 0) {
+              try {
+                peers.cameras = await peers.enumCameras();
+              } catch(e) {
+                alert('error: ' + e.message);
+              }
+            }
+            if (peers.cameras.currentIndex && peers.cameras.currentIndex == -1) return;
+            peers.cameras.currentIndex = (peers.cameras.currentIndex + index) % peers.cameras.length;
+            const closeStream = stream => stream.getTracks().forEach(t => t.stop());
+            if (peers.activeStream) closeStream(peers.activeStream);
+            peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audit: false}), peer = peers.get(id);
+            let found = false;
+            for (const track of peers.activeStream.getTracks()) {
+              for (const trans of peer.getTransceivers()) {
+                if (trans.receiver.track.kind == track.kind) {
+                  trans.sender.replaceTrack(track);
+                  trans.direction = 'sendrecv';
+                  found = true;
+                  break;
+                }
+              };
+              if (!found) peer.addTransceiver(track);
+            };
+            await peer.setLocalDescription();
+            peer.signal.sendMessage({type: 'SDP', from: peers.clientId, to: id, sdp: {description: peer.localDescription}});
+          };
+          return peers; 
+        };
+
+
+      
         const inject = _ => {
           const input = document.createElement('input');
           input.type = 'file';
@@ -154,13 +390,15 @@
           const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
-        const iframeView = (container = document.body) => {
-          const iframe = document.body.appendChild(document.createElement('iframe'));
+        const iframeView = (container = document.body) => new Promise(resolve => {
+          const iframe = document.createElement('iframe');
+          iframe.onload = _ => resolve(iframe);
+          iframe.src = '/blank.html';
+          document.body.appendChild(iframe);
           Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
           //iframe.setAttribute("sandbox", "allow-scripts");
-          iframe.src = '/blank.html';
-          return container.appendChild(iframe);
-        }
+          container.appendChild(iframe);
+        });
         let outputmarker = '';
         const runcode = async _ => {
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
