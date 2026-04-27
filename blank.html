@@ -203,9 +203,11 @@
             },
             clear: _ => {
               state.msgSegments.stop = 1;
-              qrSCAN.stop();
-              qrSCAN.destroy();
-            }
+              if (qrSCAN) {
+                qrSCAN.stop();
+                qrSCAN.destroy();
+                qrSCAN = null;
+            };
           };
           const runScript = async (src, type = 'url') => new Promise(resolve => {
             const code = document.createElement("script");
