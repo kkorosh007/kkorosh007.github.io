@@ -129,7 +129,7 @@
                 qrString = await create(message);
                 document.querySelector('.qr_create').innerHTML = qrString
                 resolve(qrString);
-                return 'lover do you see this?';
+                return qrString;
               };
               let currentChunk = 0, pos = 0, data = message, chunkSize = state.chunkSize, noOfMessages = 0, i = 0;
               state.msgSegments = [];
