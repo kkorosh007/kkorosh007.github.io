@@ -393,7 +393,7 @@
           iframe.onload = _ => resolve(iframe);
           iframe.src = '/blank.html';
           document.body.appendChild(iframe);
-          Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
+          Object.assign(iframe.style, {width: '100px', height: '100px', position: 'absolute', left: '0', bottom: '0'});
           //iframe.setAttribute("sandbox", "allow-scripts");
           container.appendChild(iframe);
         });
@@ -454,7 +454,12 @@
   <body role="main">
     <button style="align-self: start;">Run</button>
     <button id="bJect" style="display: none;" aria-label="Inject App">Inject App Home</button>
-    <textarea id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;"></textarea>
+    <textarea id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;">
+      makeCall('k');
+      const iframe = document.querySelector('iframe');
+      iframe.contentWindow.document.body.children[0].children[1].dispatchEvent(new Event('resize'));
+
+    </textarea>
   </body>
 </html>
 
