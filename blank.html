@@ -88,6 +88,11 @@
     </style>
     <script>
       {
+        if (document.location.search == '?asd=8') {
+          alert('exiting');
+          window.close();
+          return;
+        }
         let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
         if(!g.dummy){
           HTMLCanvasElement.prototype.getContext=function(t,o={}){
