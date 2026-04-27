@@ -88,7 +88,7 @@
           HTMLCanvasElement.prototype.getContext.dummy=1;
         }
       };
-      {
+      //{
         const inject = _ => {
           const input = document.createElement('input');
           input.type = 'file';
@@ -212,7 +212,7 @@
           };
           window.addEventListener('keypress', e => e.code == 'BracketRight' ? iframeView() : null, {once: true});
         }, {once: true});
-      }
+      //}
     </script>
   </head>
   <body role="main">
