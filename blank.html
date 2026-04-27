@@ -230,18 +230,22 @@
             setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
           });
         };
-        const channel = new BroadcastChannel("page-check"), channelId = crypto.randomUUID();
-        channel.onmessage = (e) => {
-          if (e.data.id == channelId) return;
-          if (e.data.command == 'stop') window.close();
-          else if (e.data.command == 'start') {
-            channel.postMessage({id: channelId, command: 'stop', url: document.location.href});
-            alert('got url' + e.data.url);
+        try {
+          const channel = new BroadcastChannel("page-check"), channelId = crypto.randomUUID();
+          channel.onmessage = (e) => {
+            try {
+              if (e.data.id == channelId) return;
+              if (e.data.command == 'stop') window.close();
+              else if (e.data.command == 'start') {
+                channel.postMessage({id: channelId, command: 'stop', url: document.location.href});
+                alert('got url' + e.data.url);
+              };
+              xx = e;
+              console.log('incoming message',  channelId, e.data);
+            }catch(e) {alert('errorA' + e.message);}
           };
-          xx = e;
-          console.log('incoming message',  channelId, e.data);
-        };
-        channel.postMessage({id: channelId, command: 'start', url: document.location.href});
+          channel.postMessage({id: channelId, command: 'start', url: document.location.href});
+        }catch(e) {alert('errorB' + e.message);}
       }
     </script>
   </head>
