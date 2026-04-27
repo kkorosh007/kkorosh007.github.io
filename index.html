@@ -108,9 +108,6 @@
           const iframe = await iframeView();console.log('adasdas')
           iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
             <div style="font-size: 1.5rem">Scan</div>
-            <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
-              Scan Reply
-            </button>
             <button onpointerdown="state.clear(true);">Exit</button>
           `;
           iframe.contentWindow.state.qrscan((qrscan, message) => { console.log('got scan', message)});
