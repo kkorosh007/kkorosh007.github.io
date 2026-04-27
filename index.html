@@ -92,6 +92,8 @@
         const makeCall = async to => {
           let peers = new Map();
           peers = ChatRoom('peter', false, peers, {trickleIce: false, sendMessage: async msg => {
+            const check = document.querySelector('ifram');
+            if (check) check.contentWindow.state.clear();
             const iframe = await iframeView();
             iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
               <div style="font-size: 1.5rem">Sending Offer</div>
@@ -106,7 +108,9 @@
           await peers.makeCall('mary')
         };
         const acceptOffer = async id => {
-          const iframe = await iframeView();console.log('adasdas')
+          const check = document.querySelector('ifram');
+          if (check) check.contentWindow.state.clear();
+          const iframe = await iframeView();
           iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
             <div style="font-size: 1.5rem">Scan</div>
             <button onpointerdown="state.clear(true);">Exit</button>
