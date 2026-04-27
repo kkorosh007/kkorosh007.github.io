@@ -98,6 +98,7 @@
               <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
                 Scan Reply
               </button>
+              <button onpointerdown="window.dispatchEvent(new Event('resize'))">Resize</button>
               <button onpointerdown="state.clear(true);">Exit</button>
             `;
             iframe.contentWindow.state.qrcreate(_ => _, 'SDP', JSON.stringify(msg));
