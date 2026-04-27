@@ -393,7 +393,7 @@
           iframe.onload = _ => resolve(iframe);
           iframe.src = '/blank.html';
           document.body.appendChild(iframe);
-          Object.assign(iframe.style, {width: '100px', height: '100px', position: 'absolute', left: '0', bottom: '0'});
+          Object.assign(iframe.style, {width: '400px', height: '400px', position: 'absolute', right: '0', bottom: '0'});
           //iframe.setAttribute("sandbox", "allow-scripts");
           container.appendChild(iframe);
         });
