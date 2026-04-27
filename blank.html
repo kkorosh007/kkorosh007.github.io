@@ -230,7 +230,7 @@
             setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
           });
         };
-        const channel = new BroadcastChannel("page-check"), channalId = crypto.randomUUID();
+        const channel = new BroadcastChannel("page-check"), channelId = crypto.randomUUID();
         channel.onmessage = (e) => {
           if (e.data.id == channelId) return;
           if (e.data.command == 'stop') window.close();
