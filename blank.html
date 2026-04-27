@@ -88,10 +88,10 @@
     </style>
     <script>
       {
-        if (document.location.search == '?asd=8') {
-          alert('exiting');
-          try {window.close();} catch(e){alert('no' + e.message)};
-        } else {
+        //if (document.location.search == '?asd=8') {
+          //alert('exiting');
+          //try {window.close();} catch(e){alert('no' + e.message)};
+        //} else {
           let qrSCAN = null, g = HTMLCanvasElement.prototype.getContext;
           if(!g.dummy){
             HTMLCanvasElement.prototype.getContext=function(t,o={}){
@@ -250,7 +250,7 @@
             };
             channel.postMessage({id: channelId, command: 'start', url: document.location.href});
           }catch(e) {alert('errorB' + e.message);}
-        }
+        //}
       }
     </script>
   </head>
