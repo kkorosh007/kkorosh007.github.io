@@ -20,7 +20,7 @@
         color: var(--fg1);
       }
       html {
-        height: 100vh;
+        height: 100%;
       }
       body {
         display: grid;
@@ -92,33 +92,24 @@
         }
       };
       //{
-        const makeCall = async to => {
+        const makeOffer = async to => {
           let peers = new Map();
           peers = ChatRoom('peter', false, peers, {trickleIce: false, sendMessage: async msg => {
-            const check = document.querySelector('ifram');
-            if (check) check.contentWindow.state.clear();
             const iframe = await iframeView();
-            iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
-              <div style="font-size: 1.5rem">Sending Offer</div>
-              <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
-                Scan Reply
-              </button>
-              <button onpointerdown="window.dispatchEvent(new Event('resize'))">Resize</button>
-              <button onpointerdown="state.clear(true);">Exit</button>
-            `;
             iframe.contentWindow.state.qrcreate(_ => _, 'SDP', JSON.stringify(msg));
           }});
-          await peers.makeCall('mary')
+          await peers.makeCall(to);
         };
         const acceptOffer = async id => {
-          const check = document.querySelector('ifram');
-          if (check) check.contentWindow.state.clear();
           const iframe = await iframeView();
-          iframe.contentWindow.document.querySelector('.qr_overlay').innerHTML = `
-            <div style="font-size: 1.5rem">Scan</div>
-            <button onpointerdown="state.clear(true);">Exit</button>
-          `;
-          iframe.contentWindow.state.qrscan((qrscan, message) => { console.log('got scan', message)});
+          iframe.contentWindow.state.qrscan((qrscan, action, message) => {
+            console.log('getting msg', message);
+            const ref = JSON.stringify(message);
+            if (ref.sdp.description.type == 'answer') {
+              // return or better still create peer and pass i
+            }
+            console.log('got scan', action, JSON.stringify(message).sdp.description.type);
+          });
         };
 
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
@@ -396,6 +387,8 @@
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
         const iframeView = (container = document.body) => new Promise(resolve => {
+          const check = document.querySelector('ifram');
+          if (check) return resolve(check);
           const iframe = document.createElement('iframe');
           iframe.onload = _ => resolve(iframe);
           iframe.src = '/blank.html';
@@ -463,10 +456,7 @@
     <button style="align-self: start;">Run</button>
     <button id="bJect" style="display: none;" aria-label="Inject App">Inject App Home</button>
     <textarea id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;">
-      makeCall('k');
-      const iframe = document.querySelector('iframe');
-      iframe.contentWindow.document.body.children[0].children[1].dispatchEvent(new Event('resize'));
-
+      makeOffer('k');
     </textarea>
   </body>
 </html>

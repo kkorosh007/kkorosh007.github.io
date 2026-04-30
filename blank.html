@@ -67,6 +67,8 @@
         border: 1px solid #ccc;
       }
       .qr_overlay {
+        height: fit-content;
+        align-self: center;
         display: none;
         grid-column: 1 / -1;
         grid-row: 1 / -1;
@@ -77,6 +79,7 @@
         border: 1px solid white;
         border-radius: 5px;
         padding: .5rem;
+        padding-bottom: 1rem;
         & > *:nth-child(1) {
           background-color: black;
           justify-self: center;
@@ -96,6 +99,12 @@
           grid-template-rows: calc(100% - var(--percent)) calc(var(--percent) - 1rem)
         }
       }
+      button {
+        justify-self: center;
+        width: 80%;
+        max-height: 3rem;
+        font-size: 1.3rem;
+      }
     </style>
     <script>
       //{
@@ -109,16 +118,17 @@
               qrSCAN.start();
             }
           });
-          var qrSCAN = null
-          let g = HTMLCanvasElement.prototype.getContext;
-          if(!g.dummy){
-            HTMLCanvasElement.prototype.getContext=function(t,o={}){
-              if(t==="2d")o={willReadFrequently:true,...o};
-              return g.call(this,t,o);
-            };
-            HTMLCanvasElement.prototype.getContext.dummy=1;
-          }
-          var state = {
+          {
+            const g = HTMLCanvasElement.prototype.getContext;
+            if(!g.dummy){
+              HTMLCanvasElement.prototype.getContext=function(t,o={}){
+                if(t==="2d")o={willReadFrequently:true,...o};
+                return g.call(this,t,o);
+              };
+              HTMLCanvasElement.prototype.getContext.dummy=1;
+            }
+          };
+          var qrSCAN = null, state = {
             chunkSize: 50,
             msgSegments: [],
             qrCfg: {
@@ -136,6 +146,14 @@
             qrcreate: async (resolve, command, message) => {
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
+              document.querySelector('.qr_overlay').innerHTML = `
+                <div style="font-size: 1.5rem">Sending Offer</div>
+                <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
+                  Scan Reply
+                </button>
+                <button onpointerdown="window.dispatchEvent(new Event('resize'))">Resize</button>
+                <button onpointerdown="state.clear(true);">Exit</button>
+              `;
               if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
                 let qrString = await QRCode.toString(message, state.qrCfg);
@@ -184,6 +202,10 @@
             qrscan: async resolve => {
               document.querySelector('.qr_scan').style.display = '';
               document.querySelector('.qr_create').style.display = 'none';
+              document.querySelector('.qr_overlay').innerHTML = `
+                <div style="font-size: 1.5rem">Scan</div>
+                <button onpointerdown="state.clear(true);">Exit</button>
+              `;
               if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
               let video = document.querySelector("video");
               const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
@@ -193,7 +215,7 @@
                 let data = result.data, index = data.indexOf("@");
                 if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
                 let meta = data.substring(0, index), args = meta.split(",");
-                data = data.substring(index); 
+                data = data.substring(index + 1); 
                 if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
                 let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
                 if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage3', result.data);
@@ -207,14 +229,14 @@
                 if (pos == 0) action = command;
                 if (numRead == noOfChunks) {
                   console.log("got ACTION", action);
-                  setTimeout(_ => {
+                  //setTimeout(_ => {
                     qrScan.stop();
                     const message = chunks.splice(0, noOfChunks).join("");
                     chunks = new Array();
                     numRead = 0;
-                    console.log('got coded message', action, message);
-                    return resolve(qrScan, action, data);
-                  }, 0);
+                    console.log('got coded message', action);
+                    return resolve(qrScan, action, message);
+                  //}, 0);
                 } else console.log('Input', noOfChunks, numRead, pos);
               }, cfg);
               qrScan.start();
