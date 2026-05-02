@@ -14,7 +14,7 @@
     <style>
       html {
         font-size: 16px;
-        height: 100dvh;
+        hheight: 100dvh;
         margin: 0;
         padding: 0;
         background-color: black;
@@ -27,7 +27,7 @@
         display: block;
         font-size: 1.2rem;
         width: calc(100% - 0rem);
-        height: calc(100% - 0rem);
+        hheight: calc(100% - 0rem);
         grid-template-columns: 1fr;
         margin: 0;
         padding: 0rem;
@@ -35,6 +35,10 @@
           align-self: center;
           justify-self: center;
         }
+      }
+      html, body {
+        min-height: 100%;
+        height: auto;
       }
       svg, video {
         width: calc(100% - 2px);
