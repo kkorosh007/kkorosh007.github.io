@@ -192,7 +192,7 @@
                 state.msgSegments[i] = state.msgSegments[i].replace('@@@@', noOfMessages.toString().padStart(4, '0'));
               }
               pos = 0;
-              let interval = setInterval(async _ => {
+              state.interval = setInterval(async _ => {
                 if (state.msgSegments.stop) {
                   console.log('stoping');
                   clearInterval(interval);
@@ -257,18 +257,19 @@
               console.log('state clear', remove)
               delete state.handler;
               document.querySelector('.qr_overlay').style.display = 'none';
+              clearInterval(state.interval);
               state.msgSegments.stop = 1;
-              setTimeout(_ => {
-              if (qrSCAN) {
-                qrSCAN.stop();
-                qrSCAN.destroy();
-                qrSCAN = null;
-              };
-              if (remove) {
-                const iframe = window.parent.document.querySelector('iframe');
-                iframe.parentElement.removeChild(iframe);
-              };
-            }, 200);
+              //setTimeout(_ => {
+                if (qrSCAN) {
+                  qrSCAN.stop();
+                  qrSCAN.destroy();
+                  qrSCAN = null;
+                };
+                if (remove) {
+                  const iframe = window.parent.document.querySelector('iframe');
+                  iframe.parentElement.removeChild(iframe);
+                };
+              //}, 200);
             }
           };
           const runScript = async (src, type = 'url') => new Promise(resolve => {
