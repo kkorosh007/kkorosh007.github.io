@@ -266,8 +266,10 @@
                   qrSCAN = null;
                 };
                 if (remove) {
-                  const iframe = window.parent.document.querySelector('iframe');
-                  iframe.parentElement.removeChild(iframe);
+                  setTimeout(_ => {
+                    const iframe = window.parent.document.querySelector('iframe');
+                    iframe.parentElement.removeChild(iframe);
+                  }, 200);
                 };
               //}, 200);
             }
