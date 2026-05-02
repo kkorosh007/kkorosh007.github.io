@@ -14,7 +14,7 @@
     <style>
       html {
         font-size: 16px;
-        hheight: 100dvh;
+        height: 100%;
         margin: 0;
         padding: 0;
         background-color: black;
@@ -27,7 +27,7 @@
         display: block;
         font-size: 1.2rem;
         width: calc(100% - 0rem);
-        hheight: calc(100% - 0rem);
+        height: calc(100% - 0rem);
         grid-template-columns: 1fr;
         margin: 0;
         padding: 0rem;
@@ -35,10 +35,6 @@
           align-self: center;
           justify-self: center;
         }
-      }
-      html, body {
-        min-height: 100dvh;
-        height: auto;
       }
       svg, video {
         width: calc(100% - 2px);
@@ -102,6 +98,9 @@
           grid-template-rows: calc(100% - var(--percent)) calc(var(--percent) - 1rem)
         }
       }
+      svg {
+        pointer-events: none;
+      }
       button {
         justify-self: center;
         width: 80%;
@@ -149,14 +148,16 @@
             qrcreate: async (resolve, command, message) => {
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
+              document.querySelector('.qr_overlay').style.display = 'none';
               document.querySelector('.qr_overlay').innerHTML = `
                 <div style="font-size: 1.5rem">Sending Offer</div>
-                <button onpointerdown="state.qrscan((a,b,c) => console.log(999, a,b, c))">
+                <button onpointerdowna="state.qrscan((a,b,c) => console.log(999, a,b, c))">
                   Scan Reply
                 </button>
-                <button onpointerdown="window.dispatchEvent(new Event('resize'))">Resize</button>
-                <button onpointerdown="state.clear(true);">Exit</button>
+                <button onpointerdowna="window.dispatchEvent(new Event('resize'))">Resize</button>
+                <button onpointerdown="console.log(876); state.clear(true);">Exit</button>
               `;
+              
               if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
                 let qrString = await QRCode.toString(message, state.qrCfg);
@@ -193,6 +194,7 @@
               pos = 0;
               let interval = setInterval(async _ => {
                 if (state.msgSegments.stop) {
+                  console.log('stoping');
                   clearInterval(interval);
                   document.querySelector('.qr_create').innerHTML = '';
                   return;
@@ -252,9 +254,11 @@
               overlay.innerHTML = content;
             },
             clear: (remove = false) => {
+              console.log('state clear', remove)
               delete state.handler;
               document.querySelector('.qr_overlay').style.display = 'none';
               state.msgSegments.stop = 1;
+              setTimeout(_ => {
               if (qrSCAN) {
                 qrSCAN.stop();
                 qrSCAN.destroy();
@@ -264,6 +268,7 @@
                 const iframe = window.parent.document.querySelector('iframe');
                 iframe.parentElement.removeChild(iframe);
               };
+            }, 200);
             }
           };
           const runScript = async (src, type = 'url') => new Promise(resolve => {
@@ -290,12 +295,14 @@
             }
             document.documentElement.appendChild(code);
           });
+          const fred = e => {
+            const ref = document.querySelector('.qr_overlay');
+            console.log('CLICKED', e.target, ref.style.display)
+            if (ref.style.display == 'none') ref.style.display = 'grid';
+            else ref.style.display = ' none'; 
+          }
           window.onload = _ => {
-            document.documentElement.addEventListener('pointerdown', _ => {
-              const ref = document.querySelector('.qr_overlay');
-              if (ref.style.display == 'none') ref.style.display = 'grid';
-              else ref.style.display = ' none'; 
-            });
+            document.documentElement.addEventListener('pointerdown', fred);
             return;
             document.querySelector('.qr_scan').addEventListener('click', async _ => {
               if (qrSCAN) qrSCAN.stop();
