@@ -141,9 +141,16 @@
             if (!peers.has(ref.from)) {
               peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
                 const iframe = await iframeView();
+                const checkconnected = _ => {
+                  if (peers.get(msg.to).connectionState == 'connected') {console.log('are online trying to close iframe');
+                    peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
+                    if (iframe.parentElement) iframe.parentElement.removeChild(iframe);              
+                  }
+                };
+                peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
                 iframe.contentWindow.state.qrcreate(e => {
                   // if not exiting scan for anser
-                  iframe.parentElement.removeChild(iframe);
+                  //iframe.parentElement.removeChild(iframe);
                   console.log('peers called back', e);
                   //acceptOffer(msg.to);
                 }, 'SDP', JSON.stringify(msg), version);
@@ -151,7 +158,7 @@
             };
             peers.get(ref.from).receiveMessage(ref);
             console.log('got an answer');
-            iframe.parentElement.removeChild(iframe);
+            //iframe.parentElement.removeChild(iframe);
           });
         };
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
