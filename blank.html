@@ -118,7 +118,7 @@
             if (qrSCAN) {
               qrSCAN.stop();
               qrSCAN.start();
-            }
+            };
           });
           {
             const g = HTMLCanvasElement.prototype.getContext;
@@ -203,7 +203,7 @@
               state.clear();
               document.querySelector('.qr_scan').style.display = '';
               document.querySelector('.qr_create').style.display = 'none';
-              document.querySelector('.qr_overlay>button').onpointerdown = _ => resolve('exit');
+              document.querySelector('.qr_overlay>button').onpointerdown = _ => {state.clear(); resolve('exit');};
               if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
               let video = document.querySelector("video");
               const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};

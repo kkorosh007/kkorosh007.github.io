@@ -81,24 +81,14 @@
       })
     </script>
     <script>
-      {
-        let g = HTMLCanvasElement.prototype.getContext;
-        if(!g.dummy){
-          HTMLCanvasElement.prototype.getContext=function(t,o={}){
-            if(t==="2d")o={willReadFrequently:true,...o};
-            return g.call(this,t,o);
-          };
-          HTMLCanvasElement.prototype.getContext.dummy=1;
-        }
-      };
+      "use strict";
       //{
-        let version = 1;
+        let version = 1, outputmarker = '', peers = new Map();
         const connect = id => {
           peers = new Map();
           peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
             iframe.contentWindow.state.qrcreate(e => {
-              // if not exiting scan for anser
               console.log('peers called back', e);
               if (msg.sdp.description.type == 'offer') acceptOffer(msg.to);
             }, 'SDP', JSON.stringify(msg), version);
@@ -116,26 +106,22 @@
               return;
             };
             const ref = JSON.parse(message);
-            //if (ref.sdp.description.type == 'answer') {
-              // return or better still create peer and pass i
-              if (!peers.has(ref.from)) {
-                peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
-                  const iframe = await iframeView();
-                  iframe.contentWindow.state.qrcreate(e => {
-                    // if not exiting scan for anser
-                    iframe.parentElement.removeChild(iframe);
-                    console.log('peers called back', e);
-                    //acceptOffer(msg.to);
-                  }, 'SDP', JSON.stringify(msg), version);
-                }})
-              };
-              peers.get(ref.from).receiveMessage(ref);
-              console.log('got an answer');
-              iframe.parentElement.removeChild(iframe);
-            //} else console.log('got an offer');
+            if (!peers.has(ref.from)) {
+              peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
+                const iframe = await iframeView();
+                iframe.contentWindow.state.qrcreate(e => {
+                  // if not exiting scan for anser
+                  iframe.parentElement.removeChild(iframe);
+                  console.log('peers called back', e);
+                  //acceptOffer(msg.to);
+                }, 'SDP', JSON.stringify(msg), version);
+              }})
+            };
+            peers.get(ref.from).receiveMessage(ref);
+            console.log('got an answer');
+            iframe.parentElement.removeChild(iframe);
           });
         };
-        let peers = new Map();
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
@@ -422,7 +408,6 @@
           Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
           container.appendChild(iframe);
         });
-        let outputmarker = '';
         const runcode = async _ => {
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
           let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
@@ -451,7 +436,7 @@
 
   ${outputmarker}
 
-  ${result}
+${result}
   `;
           if (p >= code.length) p = 0;
           t.selectionStart = t.selectionEnd = p;
