@@ -151,14 +151,6 @@
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
               document.querySelector('.qr_overlay').style.display = 'none';
-              /*document.querySelector('.qr_overlay').innerHTML = `
-                <div style="font-size: 1.5rem">Sending Offer</div>
-                <button onpointerdown="state.qrscan((a,b,c) => {state.kick = {a,b,c}; console.log(999, a,b, c)})">
-                  Scan Reply
-                </button>
-                <button onpointerdown="window.dispatchEvent(new Event('resize'))">Resize</button>
-                <button onpointerdown="console.log(876); state.clear(true);">Exit</button>
-              `;*/
               document.querySelector('.qr_overlay>button').onpointerdown = _ => resolve('exit');
               if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
@@ -211,10 +203,6 @@
               state.clear();
               document.querySelector('.qr_scan').style.display = '';
               document.querySelector('.qr_create').style.display = 'none';
-              /*document.querySelector('.qr_overlay').innerHTML = `
-                <div style="font-size: 1.5rem">Scan</div>
-                <button onpointerdown="state.clear(true);">Exit</button>
-              `;*/
               document.querySelector('.qr_overlay>button').onpointerdown = _ => resolve('exit');
               if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
               let video = document.querySelector("video");
@@ -251,12 +239,6 @@
               }, cfg);
               qrScan.start();
               return qrScan;
-            },
-            show: (content, handler) => {
-              state.handler = handler
-              const overlay = document.querySelector('.qr_overlay');
-              overlay.style.display = 'grid';
-              overlay.innerHTML = content;
             },
             clear: (remove = false) => {
               console.log('state clear', remove)
@@ -308,16 +290,6 @@
           }
           window.onload = _ => {
             document.documentElement.addEventListener('pointerdown', popup);
-            return;
-            document.querySelector('.qr_scan').addEventListener('click', async _ => {
-              if (qrSCAN) qrSCAN.stop();
-              qrSCAN = await state.qrscan((qrscan, type, message) => console.log('got scan', type, message));
-            }, {once: true});
-            document.querySelector('.qr_create').addEventListener('click', async _ => {
-              state.msgSegments.stop = 1
-              const type = prompt('type', 'qr').toString(), message = prompt('message', 'hello').toString();
-              setTimeout(async _ => await state.qrcreate(data => {console.log('created qr', data); }, type, message), 500);
-            });
           };
           const k = _ => {
             try {
