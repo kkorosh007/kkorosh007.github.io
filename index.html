@@ -114,9 +114,9 @@
           peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
             const checkconnected = _ => {
-              if (peers.get(msg.to).connectionState == 'connected') {
+              if (peers.get(msg.to).connectionState == 'connected') {console.log('are online trying to close iframe');
                 peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
-                iframe.parentElement.removeChild(iframe);              
+                if (iframe.parentElement) iframe.parentElement.removeChild(iframe);              
               }
             };
             peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
