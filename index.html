@@ -409,7 +409,7 @@
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
         const iframeView = (container = document.body) => new Promise(resolve => { 
-          const check = document.querySelector('ifram');
+          const check = document.querySelector('iframe');
           if (check) check.parentElement.removeChild(check);
           const iframe = document.createElement('iframe');
           iframe.onload = _ => {
