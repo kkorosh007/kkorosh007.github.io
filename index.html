@@ -113,7 +113,7 @@
             console.log('getting msg', action, message);
             if (action != 'SDP') return;
             const ref = JSON.parse(message);
-            if (ref.sdp.description.type == 'answer') {
+            //if (ref.sdp.description.type == 'answer') {
               // return or better still create peer and pass i
               if (!peers.has(ref.from)) {
                 peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
@@ -128,7 +128,7 @@
               peers.get(ref.from).receiveMessage(ref);
               console.log('got an answer');
               iframe.parentElement.removeChild(iframe);
-            } else console.log('got an offer');
+            //} else console.log('got an offer');
           });
         };
         let peers = new Map();
