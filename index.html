@@ -100,7 +100,7 @@
             iframe.contentWindow.state.qrcreate(e => {
               // if not exiting scan for anser
               console.log('peers called back', e);
-              acceptOffer(msg.to);
+              if (msg.sdp.description.type == 'offer') acceptOffer(msg.to);
             }, 'SDP', JSON.stringify(msg), version);
           }});
         }
@@ -121,7 +121,7 @@
                   iframe.contentWindow.state.qrcreate(e => {
                     // if not exiting scan for anser
                     console.log('peers called back', e);
-                    acceptOffer(msg.to);
+                    //acceptOffer(msg.to);
                   }, 'SDP', JSON.stringify(msg), version);
                 }})
               };
