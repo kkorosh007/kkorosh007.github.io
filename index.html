@@ -92,26 +92,35 @@
         }
       };
       //{
-        const makeOffer = async to => {
-          let peers = new Map();
-          peers = ChatRoom('peter', false, peers, {trickleIce: false, sendMessage: async msg => {
+        let version = 1;
+        const connect = id => {
+          peers = new Map();
+          peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
-            iframe.contentWindow.state.qrcreate(_ => _, 'SDP', JSON.stringify(msg));
+            iframe.contentWindow.state.qrcreate(e => {
+              // if not exiting scan for anser
+              console.log('peers called back', e);
+              acceptOffer(msg.to);
+            }, 'SDP', JSON.stringify(msg), version);
           }});
+        }
+        const makeOffer = async to => {
           await peers.makeCall(to);
         };
-        const acceptOffer = async id => {
+        const acceptOffer = async from => {
           const iframe = await iframeView();
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
-            console.log('getting msg', message);
-            const ref = JSON.stringify(message);
+            console.log('getting msg', action, message);
+            if (action != 'SDP') return;
+            const ref = JSON.parse(message);
             if (ref.sdp.description.type == 'answer') {
               // return or better still create peer and pass i
-            }
-            console.log('got scan', action, JSON.stringify(message).sdp.description.type);
+              peers.get(ref.from).receiveMessage(ref);
+              console.log('got an answer');
+            } else console.log('got an offer');
           });
         };
-
+        let peers = new Map();
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
@@ -273,6 +282,7 @@
           };
           if (httpListen) listenForMessages(clientId, clientId + '-123');
           peers.cameras = [];
+          peers.clientId = clientId;
           peers.activeStream = null;
           peers.createPeer = createPeer;
           peers.makeCall = makeCall;
@@ -383,7 +393,7 @@
           const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
-        const iframeView = (container = document.body) => new Promise(resolve => {
+        const iframeView = (container = document.body) => new Promise(resolve => { 
           const check = document.querySelector('ifram');
           if (check) check.parentElement.removeChild(check);
           const iframe = document.createElement('iframe');
@@ -392,16 +402,14 @@
             resolve(iframe);
           }
           iframe.src = '/blank.html?time=' + Date.now();
-          //document.body.appendChild(iframe);
-          //Object.assign(iframe.style, {width: '400px', height: '400px', position: 'absolute', right: '0', bottom: '0'});
           Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
-          //iframe.setAttribute("sandbox", "allow-scripts");
           container.appendChild(iframe);
         });
         let outputmarker = '';
         const runcode = async _ => {
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
           let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
+          let p = t.selectionStart;
           if (marker == -1 || outputmarker == '') marker = code.length;
           else marker = marker - 3;
           code = code.substring(0, marker).replace(/\n+$/, '');
@@ -427,6 +435,8 @@
 
   ${result}
   `;
+          if (p >= code.length) p = 0;
+          t.selectionStart = t.selectionEnd = p;
         };
         window.addEventListener('load', _ => {
           const b = document.querySelectorAll('button');
@@ -435,10 +445,10 @@
           const t = document.querySelector('textarea');
           t.onkeydown = e => {
             if (e.key == "F3") {
-              const p = t.selectionStart;
+              //const p = t.selectionStart;
               e.preventDefault();
               runcode();
-              t.selectionStart = t.selectionEnd = p;
+              //t.selectionStart = t.selectionEnd = p;
             };
             if (e.key === "Tab") {
               e.preventDefault();
