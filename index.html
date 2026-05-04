@@ -110,7 +110,7 @@
         const acceptOffer = async from => {
           const iframe = await iframeView();
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
-            console.log('getting msg', action, message);
+            console.log('getting msg', qrscan, action, message);
             if (action != 'SDP') return;
             const ref = JSON.parse(message);
             //if (ref.sdp.description.type == 'answer') {
