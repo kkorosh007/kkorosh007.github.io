@@ -328,15 +328,17 @@
             peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audit: false}), peer = peers.get(id);
             let found = false;
             for (const track of peers.activeStream.getTracks()) {
-              for (const trans of peer.getTransceivers()) {
-                if (trans.receiver.track.kind == track.kind) {
-                  trans.sender.replaceTrack(track);
-                  trans.direction = 'sendrecv';
-                  found = true;
-                  break;
-                }
+              for (const [key, peer] of peers) {
+                for (const trans of peer.getTransceivers()) {
+                  if (trans.receiver.track.kind == track.kind) {
+                    trans.sender.replaceTrack(track);
+                    trans.direction = 'sendrecv';
+                    found = true;
+                    break;
+                  }
+                };
+                if (!found) peer.addTransceiver(track);
               };
-              if (!found) peer.addTransceiver(track);
             };
             await peer.setLocalDescription();
             peer.signal.sendMessage({type: 'SDP', from: peers.clientId, to: id, sdp: {description: peer.localDescription}});
