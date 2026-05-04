@@ -115,8 +115,19 @@
             const ref = JSON.parse(message);
             if (ref.sdp.description.type == 'answer') {
               // return or better still create peer and pass i
+              if (!peers.has(ref.from)) {
+                peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
+                  const iframe = await iframeView();
+                  iframe.contentWindow.state.qrcreate(e => {
+                    // if not exiting scan for anser
+                    console.log('peers called back', e);
+                    acceptOffer(msg.to);
+                  }, 'SDP', JSON.stringify(msg), version);
+                }})
+              };
               peers.get(ref.from).receiveMessage(ref);
               console.log('got an answer');
+              iframe.parentElement.removeChild(iframe);
             } else console.log('got an offer');
           });
         };
