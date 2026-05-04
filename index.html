@@ -120,6 +120,7 @@
                   const iframe = await iframeView();
                   iframe.contentWindow.state.qrcreate(e => {
                     // if not exiting scan for anser
+                    iframe.parentElement.removeChild(iframe);
                     console.log('peers called back', e);
                     //acceptOffer(msg.to);
                   }, 'SDP', JSON.stringify(msg), version);
