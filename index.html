@@ -62,6 +62,12 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
+      .test {
+        left: 300px !important;
+        top: 300px !important;
+        width: 300px !important;
+        height: 300px !important;
+      }
     </style>
     <script>  // Main Window Uncaught Error Handler
       "use strict";
@@ -84,10 +90,36 @@
       "use strict";
       //{
         let version = 1, outputmarker = '', peers = new Map();
+        let gestureAction = '', shutdown = false;
+        const gestureHandler = async _ => {
+          const waitInLine = async _ => new Promise(resolve => gestureAction = resolve);
+          document.body.addEventListener('click', async () => {
+            console.log('clicked');
+            while (!(shutdown)) {
+              try {
+                const action = await waitInLine();
+                console.log('called in', action);
+                if (shutdown) return;
+                if (document.visibilityState != 'visible' || !document.hasFocus()) action('');
+                else {
+                  const items = await navigator.clipboard.readText();
+                  action(items);
+                };
+              } catch (e) { console.log('got an error', e.message)};
+            };
+          }, {once: true});
+        }
         const connect = id => {
           peers = new Map();
           peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
+            const checkconnected = _ => {
+              if (peers.get(msg.to).connectionState == 'connected') {
+                peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
+                iframe.parentElement.removeChild(iframe);              
+              }
+            };
+            peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
             iframe.contentWindow.state.qrcreate(e => {
               console.log('peers called back', e);
               if (msg.sdp.description.type == 'offer') acceptOffer(msg.to);
@@ -299,7 +331,7 @@
               return track.getSettings()
             } catch (e) {return e.message}
           }
-          peers.sendVideo = async (id, index) => {
+          peers.sendVideo = async (index = 1) => {
             if (peers.cameras.length == 0) {
               try {
                 peers.cameras = await peers.enumCameras();
@@ -311,7 +343,7 @@
             peers.cameras.currentIndex = (peers.cameras.currentIndex + index) % peers.cameras.length;
             const closeStream = stream => stream.getTracks().forEach(t => t.stop());
             if (peers.activeStream) closeStream(peers.activeStream);
-            peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audit: false}), peer = peers.get(id);
+            peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audit: false});
             let found = false;
             for (const track of peers.activeStream.getTracks()) {
               for (const [key, peer] of peers) {
@@ -326,8 +358,10 @@
                 if (!found) peer.addTransceiver(track);
               };
             };
-            await peer.setLocalDescription();
-            peer.signal.sendMessage({type: 'SDP', from: peers.clientId, to: id, sdp: {description: peer.localDescription}});
+            for (const [key, peer] of peers) {
+              await peer.setLocalDescription();
+              peer.signal.sendMessage({type: 'SDP', from: peers.clientId, to: key, sdp: {description: peer.localDescription}});
+            };
           };
           return peers; 
         };
