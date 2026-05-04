@@ -140,6 +140,7 @@
             };
             const ref = JSON.parse(message);
             if (!peers.has(ref.from)) {
+              console.log('creating peer', ref.from);
               peers.createPeer(ref.from, {trickleIce: false, sendMessage: async msg => {
                 const iframe = await iframeView();
                 const checkconnected = _ => {
@@ -156,7 +157,7 @@
                   console.log('peers called back', e);
                   //acceptOffer(msg.to);
                 }, 'SDP', JSON.stringify(msg), version);
-              }})
+              }});
             };
             peers.get(ref.from).receiveMessage(ref);
             console.log('got an answer', ref);
