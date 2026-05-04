@@ -111,7 +111,10 @@
           const iframe = await iframeView();
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
             console.log('getting msg', qrscan, action, message);
-            if (action != 'SDP') return;
+            if (action != 'SDP') {
+              iframe.parentElement.removeChild(iframe);
+              return;
+            };
             const ref = JSON.parse(message);
             //if (ref.sdp.description.type == 'answer') {
               // return or better still create peer and pass i
