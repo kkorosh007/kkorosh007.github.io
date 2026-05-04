@@ -151,6 +151,7 @@
                   }
                 };
                 peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
+                console.log('sending qrsdp', msg, version);
                 iframe.contentWindow.state.qrcreate(e => {
                   // if not exiting scan for anser
                   //iframe.parentElement.removeChild(iframe);
@@ -159,7 +160,7 @@
                 }, 'SDP', JSON.stringify(msg), version);
               }});
             };
-            peers.get(ref.from).receiveMessage(ref);
+            setTimeout(_ => peers.get(ref.from).receiveMessage(ref), 0);
             console.log('got an answer', ref);
             //iframe.parentElement.removeChild(iframe);
           });
