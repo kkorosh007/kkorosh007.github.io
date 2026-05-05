@@ -146,7 +146,6 @@
             };
             setTimeout(_ => peers.get(ref.from).receiveMessage(ref), 0);
             console.log('got an answer', ref);
-            //iframe.parentElement.removeChild(iframe);
           });
         };
         const valueFromPercent = (percent, min, max, step) => {
