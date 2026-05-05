@@ -117,7 +117,7 @@
               if (peers.get(msg.to).connectionState == 'connected') {console.log('are online trying to close iframe');
                 peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
                 let iframe = document.querySelector('iframe');
-                if (iframe) iframe.parentElement.removeChild(iframe);              
+                if (iframe) iframe.contentWindow.state.clear(true);              
               }
             };
             peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
@@ -147,7 +147,7 @@
                   if (peers.get(msg.to).connectionState == 'connected') {console.log('are online trying to close iframe');
                     peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
                     let iframe = document.querySelector('iframe');
-                    if (iframe) iframe.parentElement.removeChild(iframe);              
+                    if (iframe) iframe.contentWindow.state.clear(true);              
                   }
                 };
                 peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
