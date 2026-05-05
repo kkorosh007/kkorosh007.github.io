@@ -151,7 +151,7 @@
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
               //document.querySelector('.qr_overlay').style.display = 'none';
-              document.querySelector('.qr_overlay>button').onpointerdown = _ => { state.clear(); resolve('exit') };
+              document.querySelector('.qr_overlay>button').onpointerdown = e => {e.preventDefault(); setTimeout(_ => {state.clear(); resolve('exit');}, 0)};
               if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
                 let qrString = await QRCode.toString(message, state.qrCfg);
@@ -204,7 +204,7 @@
               document.querySelector('.qr_scan').style.display = '';
               document.querySelector('.qr_create').style.display = 'none';
               //document.querySelector('.qr_overlay').style.display = 'none';
-              document.querySelector('.qr_overlay>button').onpointerdown = _ => setTimeout(_ => {state.clear(); resolve('exit');}, 0);
+              document.querySelector('.qr_overlay>button').onpointerdown = e => {e.preventDefault(); setTimeout(_ => {state.clear(); resolve('exit');}, 0)};
               if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
               let video = document.querySelector("video");
               const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
