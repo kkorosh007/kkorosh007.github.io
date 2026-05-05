@@ -165,6 +165,16 @@
             //iframe.parentElement.removeChild(iframe);
           });
         };
+        const valueFromPercent = (percent, min, max, step) => {
+          const valueRaw = min + (max - min) * (percent / 100);
+          const stepIndex = Math.round((valueRaw - min) / step);
+          const totalSteps = Math.round((max - min) / step);
+          return min + Math.min(totalSteps, Math.max(0, stepIndex)) * step;
+        };
+        const percentFromValue = (value, min, max) => {
+          let clamped = Math.min(max, Math.max(min, value));
+          return ((clamped - min) / (max - min)) * 100;
+        };
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
@@ -443,7 +453,7 @@
         };
         const iframeView = (container = document.body) => new Promise(resolve => { 
           const check = document.querySelector('iframe');
-          if (check) check.parentElement.removeChild(check);
+          if (check) return resolve(check);//check.parentElement.removeChild(check);
           const iframe = document.createElement('iframe');
           iframe.onload = _ => {
             console.log('iframe loaded')
