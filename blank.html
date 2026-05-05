@@ -150,7 +150,6 @@
               state.clear();
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
-              //document.querySelector('.qr_overlay').style.display = 'none';
               document.querySelector('.qr_overlay>button').onpointerdown = e => {e.preventDefault(); setTimeout(_ => {state.clear(); resolve('exit');}, 0)};
               if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {

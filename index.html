@@ -135,6 +135,11 @@
           const iframe = await iframeView();
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
             console.log('getting msg', qrscan, action, message);
+            if (qrscan == 'exit') {
+              if (peers.has(from)) peers.delete(from);
+              iframe.contentWindow.state.clear(true);
+              return;
+            }
             if (action != 'SDP') {
               iframe.contentWindow.state.clear(true);
               return;
