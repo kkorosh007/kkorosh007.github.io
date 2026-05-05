@@ -114,11 +114,12 @@
           peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
             const checkconnected = _ => {
-              if (peers.get(msg.to).connectionState == 'connected') {console.log('are online trying to close iframe');
+              if (peers.get(msg.to).connectionState == 'connected') {
+                console.log('are online trying to close iframe');
                 peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
                 let iframe = document.querySelector('iframe');
                 if (iframe) iframe.contentWindow.state.clear(true);              
-              }
+              };
             };
             peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
             iframe.contentWindow.state.qrcreate(e => {
@@ -135,7 +136,7 @@
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
             console.log('getting msg', qrscan, action, message);
             if (action != 'SDP') {
-              iframe.parentElement.removeChild(iframe);
+              iframe.contentWindow.state.clear(true);
               return;
             };
             const ref = JSON.parse(message);
