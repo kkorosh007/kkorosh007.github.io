@@ -19,6 +19,9 @@
         background-color: var(--bg1);
         color: var(--fg1);
       }
+      *::-webkit-scrollbar {
+        display: none;
+      }
       html {
         height: 100%;
       }
@@ -67,6 +70,49 @@
         top: 300px !important;
         width: 300px !important;
         height: 300px !important;
+      }
+      .menu {
+        display: flex;
+        max-width: 90%;
+        width: fit-content;
+        height: 5rem;
+        overflow-x: auto;
+        gap: 1.9rem;
+        border: 1px solid #ffffff;
+        border-radius: 1rem;
+        padding: .5rem;
+        scroll-behavior: smooth;
+        scroll-snap-type: x mandatory;
+        justify-content: center;
+        align-self: end;
+        justify-self: end;
+        transition: all 1s ease-in-out;
+        touch-action: pan-right pan-down;
+        transition-behavior: allow-discrete;
+      }
+      .menu::before {
+        content: 'Zoom = 3\AMin = 0\AMax = 4';
+        white-space: pre-wrap;
+      }
+      .menu::after {
+        content: 'CCC\AXXX';
+      }
+      .menu > * {font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 130px;
+        min-width: 0;
+        min-height: 0;
+      }
+      .vert-menu {
+        flex-direction: column;
+        max-height: 90%;
+        height: fit-content;
+        width: 130px;
+      }
+      .vert-menu > * {
+        flex: 0 0 5rem;
       }
     </style>
     <script>  // Main Window Uncaught Error Handler
@@ -188,8 +234,23 @@
             String(d.getMilliseconds()).padStart(3, '0');
           const createPeer = (peerId, signal = signaling) => {
             let makingOffer = false;
+            const turn = {
+  iceServers: [
+    {
+      urls: [
+        "turn:192.168.1.119:3478"
+      ],
+      iceTransportPolicy: "relay",
+      username: "testuserk",
+      credential: "testpassk"
+    }
+  ]
+};
+
             //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
-            const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
+            //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
+            //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [], bundlePolicy: 'max-bundle' });
+            const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 1, iceServers: turn.iceServers, bundlePolicy: 'max-bundle' });
             pc.remoteCommand = new Map();
             const v = pc.v = document.createElement('video');
             pc.signal = signal;
