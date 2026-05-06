@@ -567,6 +567,21 @@ ${result}
           window.addEventListener('keypress', e => e.code == 'BracketRight' ? iframeView() : null, {once: true});
         }, {once: true});
       //}
+      const coc = _ => {
+document.body.addEventListener('click', event => {
+  alert(8);
+  if (navigator.share) { 
+    alert(9);
+   navigator.share({
+      title: 'WebShare API Demo',
+      url: 'https://codepen.io/ayoisaiah/pen/YbNazJ'
+    }).then(() => {
+      alert('Thanks for sharing!');
+    })
+    .catch(alert(console.error));
+    }
+});
+      }
     </script>
   </head>
   <body role="main">
