@@ -567,12 +567,13 @@ ${result}
           window.addEventListener('keypress', e => e.code == 'BracketRight' ? iframeView() : null, {once: true});
         }, {once: true});
       //}
+      let cocco = null
       const coc = _ => {
         setTimeout(_ => {
   document.body.addEventListener('click', async () => {
       console.log("Click detected");
 
-      await new Promise(resolve => setTimeout(resolve, 3000)); // wait 3 seconds
+      await new Promise(resolve => cocco = resolve); // wait 3 seconds
 
       try {
           await navigator.share({
@@ -584,7 +585,7 @@ ${result}
       } catch (err) {
           alert(err); // Likely DOMException: user activation invalid
       }
-  });
+  }, {once: true});
 }, 1000);
 alert('loaded');
       }
