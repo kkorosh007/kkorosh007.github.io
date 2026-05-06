@@ -500,9 +500,10 @@
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
         const iframeView = (container = document.body) => new Promise(resolve => { 
-          const check = document.querySelector('iframe');
+          const check = document.querySelector('#iframe');
           if (check) return resolve(check);//check.parentElement.removeChild(check);
           const iframe = document.createElement('iframe');
+          iframe.id = 'iframe';
           iframe.onload = _ => {
             console.log('iframe loaded')
             resolve(iframe);
