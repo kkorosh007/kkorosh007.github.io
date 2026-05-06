@@ -568,17 +568,19 @@ ${result}
         }, {once: true});
       //}
       const coc = _ => {
-document.body.addEventListener('click', event => {
-  alert(8);
-  if (navigator.share) { 
-    alert(9);
-   navigator.share({
-      title: 'WebShare API Demo',
-      url: 'https://codepen.io/ayoisaiah/pen/YbNazJ'
-    }).then(() => {
-      alert('Thanks for sharing!');
-    })
-    .catch(alert(console.error));
+button.addEventListener('click', async () => {
+    console.log("Click detected");
+
+    await new Promise(resolve => setTimeout(resolve, 3000)); // wait 3 seconds
+
+    try {
+        await navigator.share({
+            title: 'Hello',
+            text: 'This might fail',
+            url: 'https://example.com'
+        });
+    } catch (err) {
+        console.error(err); // Likely DOMException: user activation invalid
     }
 });
       }
