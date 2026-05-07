@@ -117,7 +117,7 @@
     </style>
     <script>  // Main Window Uncaught Error Handler
       "use strict";
-      window.addEventListener("error", event => {
+      let mainErrorHandler = event => {
         const {message, filename, lineno, colno, text = event.error.message, stack = event.error.stack} = event
         const msg = `
         Captured error:\n
@@ -128,9 +128,11 @@
           text     : ${text}
           stack    :\n\n${stack}
         `
+        console.log('main error clled')
         tCode.value += msg //prompt('Error Please', msg)
         event.returnValue = true
-      })
+      };
+      window.addEventListener("error", mainErrorHandler)
     </script>
     <script>
       "use strict";
@@ -514,6 +516,65 @@
         });
         const runcode = async _ => {
           let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+          let error = '', log = (...args) => t.value += [...args].join(' ') + '\n', tmp = '';
+          let p = t.selectionStart;
+          if (marker == -1 || outputmarker == '') marker = code.length;
+          else marker = marker - 3;
+          code = code.substring(0, marker).replace(/\n+$/, '');
+          outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
+          t.value = code + `
+
+
+  ${outputmarker}
+`;
+
+          const Eval = async code => new Promise(resolve => {
+            const script = document.createElement('script');
+            let errorHandler = event => {
+              log('\nSyntax Error: line: ' + (event.lineno) +  ', col: ' + (event.lineno == 1 ? event.colno - 80 : event.colno));
+              log(code.split('\n')[event.lineno - 1]);
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
+              window.removeEventListener('error', errorHandler);  
+              if (script.parentElement) script.parentElement.removeChild(script);
+              window.addEventListener('error', mainErrorHandler);
+              resolve('');
+            };
+            script.textContent = `document.scripts[document.scripts.length - 1].onLoad(async log => {"use strict";${code}
+            });`;
+            script.onLoad = (e) => {
+              window.removeEventListener('error', errorHandler);  
+              script.parentElement.removeChild(script);
+              window.addEventListener('error', mainErrorHandler);
+              resolve(e);
+            };
+            window.removeEventListener('error', mainErrorHandler);
+            window.addEventListener('error', errorHandler);
+            document.head.appendChild(script);
+          });
+          const func = await Eval(code);
+          if (func == '') return;
+          try {await func(log)} catch(e) {
+            error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
+            const lines = error.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
+              if (line.includes('at eval')) {
+                const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
+                lines[i] = line.substring(0, p1) + line.substring(p2);
+                break;
+              };
+            };
+            //console.log('err', lines.join('\n'))
+            log(lines.join('\n'));
+          };
+          if (p >= code.length) p = 0;
+          t.selectionStart = t.selectionEnd = p;
+        };
+
+        const runcode1 = async _ => {
+          let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
           let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
           let p = t.selectionStart;
           if (marker == -1 || outputmarker == '') marker = code.length;
@@ -547,15 +608,13 @@ ${result}
         };
         window.addEventListener('load', _ => {
           const b = document.querySelectorAll('button');
-          b[0].addEventListener('click', runcode );
+          b[0].addEventListener('click', _ => setTimeout(runcode, 0) );
           b[1].addEventListener('click', inject );
           const t = document.querySelector('textarea');
           t.onkeydown = e => {
             if (e.key == "F3") {
-              //const p = t.selectionStart;
               e.preventDefault();
               runcode();
-              //t.selectionStart = t.selectionEnd = p;
             };
             if (e.key === "Tab") {
               e.preventDefault();
@@ -570,24 +629,22 @@ ${result}
       let cocco = null
       const coc = _ => {
         setTimeout(_ => {
-  document.body.addEventListener('click', async () => {
-      console.log("Click detected");
-
-      await new Promise(resolve => setTimeout(resolve, 3000)); // wait 3 seconds
-
-      try {
-          await navigator.share({
-              title: 'Hello',
-              text: 'This might fail',
-              url: 'https://example.com'
-          });
-          alert('shared');
-      } catch (err) {
-          alert(err); // Likely DOMException: user activation invalid
-      }
-  }, {once: true});
-}, 1000);
-alert('loaded');
+          document.body.addEventListener('click', async () => {
+            console.log("Click detected");
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            try {
+              await navigator.share({
+                title: 'Hello',
+                text: 'This might fail',
+                url: 'https://example.com'
+              });
+              alert('shared');
+            } catch (err) {
+              alert(err);
+            };
+          }, {once: true});
+        }, 1000);
+        alert('loaded');
       }
     </script>
   </head>
