@@ -214,7 +214,7 @@
                 if (index == -1) return resolve(qrScan, 'qrmessage1', result.data);
                 let meta = data.substring(0, index), args = meta.split(",");
                 data = data.substring(index + 1); 
-                if (args.lengh == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
+                if (args.length == 3 && !isNaN(args[0] + args[1])) return resolve(qrScan, 'qrmessage2', result.data);
                 let [pos, noOfChunks, command] = [parseInt(args[0]), parseInt(args[1]), args[2]];
                 if (pos < 0 || pos >= noOfChunks) return resolve(qrScan, 'qrmessage3', result.data);
                 if (noOfChunks != chunks.length) {
@@ -267,7 +267,7 @@
             };
             if (type == 'url') {
               code.addEventListener('load',  _ => remove(resolve('loaded')), {once: true});
-              code.addEventListener('error', _ => remove(resolve({type: 'error', stack: e})), {once: true});
+              code.addEventListener('error', e => remove(resolve({type: 'error', stack: e})), {once: true});
               code.src = src;
             } else  {
               code.resolve = resolve;
@@ -286,7 +286,7 @@
           const popup = e => {
             const ref = document.querySelector('.qr_overlay');
             console.log('CLICKED', e.target, ref.style.display)
-            ref.style.display = ref.style.display == 'none' ? 'grid' : ' none'; 
+            ref.style.display = ref.style.display == 'none' ? 'grid' : 'none'; 
           }
           window.onload = _ => {
             document.documentElement.addEventListener('pointerdown', popup);

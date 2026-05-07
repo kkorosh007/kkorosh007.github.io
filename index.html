@@ -148,15 +148,10 @@
                 if (shutdown) return;
                 if (document.visibilityState != 'visible' || !document.hasFocus()) action('');
                 else {
-                            await navigator.share({
-              title: 'Hello',
-              text: 'This might fail',
-              url: 'https://example.com'
-          });
-                  //const items = await navigator.clipboard.readText();
-                  //action(items);
+                  const items = await navigator.clipboard.readText();
+                  action(items);
                 };
-              } catch (e) { alert('got an error'+ e.message)};
+              } catch (e) { console.log('got an error', e.message)};
             };
           }, {once: true});
         }
