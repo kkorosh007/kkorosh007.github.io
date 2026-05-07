@@ -412,7 +412,7 @@
             peers.cameras.currentIndex = (peers.cameras.currentIndex + index) % peers.cameras.length;
             const closeStream = stream => stream.getTracks().forEach(t => t.stop());
             if (peers.activeStream) closeStream(peers.activeStream);
-            peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audit: false});
+            peers.activeStream = await navigator.mediaDevices.getUserMedia({video: { deviceId: peers.cameras[peers.cameras.currentIndex].id }, audio: false});
             let found = false;
             for (const track of peers.activeStream.getTracks()) {
               for (const [key, peer] of peers) {
@@ -524,7 +524,7 @@
             error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
             const lines = error.split('\n');
             for (let i = 0; i < lines.length; i++) {
-              line = lines[i];
+              const line = lines[i];
               if (line.includes('at eval')) {
                 const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
                 lines[i] = line.substring(0, p1) + line.substring(p2);
