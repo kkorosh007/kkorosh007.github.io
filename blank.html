@@ -254,7 +254,7 @@
                 if (remove) {
                   //setTimeout(_ => {
                     const iframe = window.parent.document.querySelector('iframe');
-                    iframe.parentElement.removeChild(iframe);
+                    if (iframe) iframe.parentElement.removeChild(iframe);
                   //}, 200);
                 };
               //}, 200);
