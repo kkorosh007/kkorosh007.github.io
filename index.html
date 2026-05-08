@@ -232,7 +232,7 @@
         }
         let signalAddress = '', signalOFFLINE = false;
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
-          if (!signalOFFLINE) httpListen = false
+          if (signalOFFLINE) httpListen = false
           console.log('sending', msg);
           if (!httpListen) {
             const iframe = await iframeView();
