@@ -211,7 +211,7 @@
           let clamped = Math.min(max, Math.max(min, value));
           return ((clamped - min) / (max - min)) * 100;
         };
-        let turn = {iceTransportPolicy = "relay", iceServers: []};
+        let turn = {iceTransportPolicy: "relay", iceServers: []};
         const initSignaler = url => {
           fetch(url).then(response => {
             response.text().then(result => {
