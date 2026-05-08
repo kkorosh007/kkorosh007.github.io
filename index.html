@@ -157,7 +157,7 @@
             };
           }, {once: true});
         }
-        const connect = id => {
+        const connect4 = id => {
           peers = new Map();
           peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
             const iframe = await iframeView();
