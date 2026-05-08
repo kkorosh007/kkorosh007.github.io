@@ -211,29 +211,25 @@
           let clamped = Math.min(max, Math.max(min, value));
           return ((clamped - min) / (max - min)) * 100;
         };
-        let turn = {iceTransportPolicy: "relay", iceServers: []};
+        let turn = {iceTransportPolicy: "all", iceServers: []};
         const initSignaler = url => {
           fetch(url).then(response => {
             response.text().then(result => {
               const {ip, name, user, pass} = JSON.parse(result);
-              turn = {
-                iceServers: [
-                  {
-                    urls: `stun:${ip}:3478`,
-                  },
-                  {
-                    urls: `turns:${ip}:5349`,
-                    username: user,
-                    credential: pass
-                  }
-                ]
-              }
-              turn.iceTransportPolicy = "relay";
+              turn.iceServers = [
+                {
+                  urls: `stun:${ip}:3478`,
+                },
+                {
+                  urls: `turns:${ip}:5349`,
+                  username: user,
+                  credential: pass
+                }
+              ];
               signalAddress = name;
             }).catch(e => {});
           }).catch(e => {});
         }
-        let SIGIP;
         let signalAddress = '';
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
