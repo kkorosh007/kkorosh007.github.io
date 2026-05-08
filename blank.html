@@ -68,7 +68,7 @@
       .qr_overlay {
         height: fit-content;
         align-self: center;
-        display: none;
+        display: grid;
         grid-column: 1 / -1;
         grid-row: 1 / -1;
         background-color: rgba(0, 0, 0, .7);
@@ -156,7 +156,7 @@
                 let qrString = await QRCode.toString(message, state.qrCfg);
                 return qrString.replace("<svg", '<svg preserveAspectRatio="xMidYMid meet"');
               };
-              if (typeof(QRCode) == 'undefined') await runScript("/3rd-party/qrcode.min.js");
+              if (typeof(QRCode) == 'undefined') await runScript("./3rd-party/qrcode.min.js");
               let qrString = '';
               if (version == -1) version = state.qrCfg.version;
               state.chunkSize = maxChars[version - 1] - 3;
@@ -204,7 +204,7 @@
               document.querySelector('.qr_create').style.display = 'none';
               //document.querySelector('.qr_overlay').style.display = 'none';
               document.querySelector('.qr_overlay>button').onpointerdown = e => {e.preventDefault(); setTimeout(_ => {state.clear(); resolve('exit');}, 0)};
-              if (typeof(QRScanner) == 'undefined') QRScanner = (await import("/3rd-party/qr-scanner.min.js")).default;
+              if (typeof(QRScanner) == 'undefined') QRScanner = (await import("./3rd-party/qr-scanner.min.js")).default;
               let video = document.querySelector("video");
               const cfgErr = err => {if (err != "No QR code found") console.warn("decode error", err)};
               const cfg = {preferredCamera: 'environment', onDecodeError: cfgErr, returnDetailedScanResult: true, highlightScanRegion: true, highlightCodeOutline: true};
@@ -313,13 +313,13 @@
       //}
     </script>
   </head>
-  <body>
+  <body role="main">
     <div class="qr_container">
       <div class="qr_child qr_create"></div>
       <div class="qr_child qr_scan">
         <video id=video></video>
       </div>
-      <div class="qr_overlay" style="display:none;">
+      <div class="qr_overlay" stylse="display:none;">
         <div style="font-size: 1.5rem">QR Menu</div>
         <button>Exit</button>
       </div>

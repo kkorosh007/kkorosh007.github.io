@@ -510,12 +510,12 @@
             console.log('iframe loaded')
             resolve(iframe);
           }
-          iframe.src = '/blank.html?time=' + Date.now();
+          iframe.src = './blank.html';//?time=' + Date.now();
           Object.assign(iframe.style, {width: '100%', height: '100%', position: 'absolute', left: '0', top: '0'});
           container.appendChild(iframe);
         });
-        const runcode = async _ => {
-          let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
+        const runcode = async c => {
+          let t = document.querySelector('textarea'), code = c ? c : t.value, marker = code.indexOf(outputmarker);
           let error = '', log = (...args) => t.value += [...args].join(' ') + '\n', tmp = '';
           let p = t.selectionStart;
           if (marker == -1 || outputmarker == '') marker = code.length;
@@ -553,9 +553,11 @@
             window.addEventListener('error', errorHandler);
             document.head.appendChild(script);
           });
+          let ret = null;
+          runcode.Eval = Eval;
           const func = await Eval(code);
           if (func == '') return;
-          try {await func(log)} catch(e) {
+          try {ret = await func(log)} catch(e) {
             error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
             const lines = error.split('\n');
             for (let i = 0; i < lines.length; i++) {
@@ -569,8 +571,10 @@
             //console.log('err', lines.join('\n'))
             log(lines.join('\n'));
           };
+          console.log('ret', ret);
           if (p >= code.length) p = 0;
           t.selectionStart = t.selectionEnd = p;
+          return ret;
         };
 
         const runcode1 = async _ => {
@@ -651,7 +655,7 @@ ${result}
   <body role="main">
     <button style="align-self: start;">Run</button>
     <button id="bJect" style="display: none;" aria-label="Inject App">Inject App Home</button>
-    <textarea id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;">
+    <textarea aria-label="JS Parser" id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;">
       version = 3;
       connect('k');
       makeOffer('s');
