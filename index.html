@@ -211,20 +211,29 @@
           let clamped = Math.min(max, Math.max(min, value));
           return ((clamped - min) / (max - min)) * 100;
         };
-        const turn = {
-          iceServers: [
-            {
-              urls: `stun:${SIGIP}:3478`,
-            },
-            {
-              urls: `turns:${SIGIP}:5349`,
-              username: "user",
-              credential: "pass"
-            }
-          ]
-        };
+        let turn = {iceServers: []};
+        const initSignaler = url => {
+          fetch(url).then(response => {
+            response.text().then(result => {
+              const {ip, name, user, pass} = JSON.parse(result);
+              turn = {
+                iceServers: [
+                  {
+                    urls: `stun:${ip}:3478`,
+                  },
+                  {
+                    urls: `turns:${ip}:5349`,
+                    username: user,
+                    credential: pass
+                  }
+                ]
+              }
+              turn.iceTransportPolicy = "relay";
+            }).catch(e => {});
+          }).catch(e => {});
+        }
         let SIGIP;
-        let signalAddress = `https://${SIGIP}/signl/`;
+        let signalAddress = '';
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
@@ -253,7 +262,7 @@
             //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
             //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [{ urls: 'stun:stun.l.google.com:19302' }], bundlePolicy: 'max-bundle' });
             //const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 5, iceServers: [], bundlePolicy: 'max-bundle' });
-            const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 0, iceServers: turn.iceServers, iceTransportPolicy: "relay", bundlePolicy: 'max-bundle' });
+            const pc = new RTCPeerConnection({ sdpSemantics: 'unified-plan', iceCandidatePoolSize: 0, iceServers: turn.iceServers, iceTransportPolicy: turn.iceTransportPolicy, bundlePolicy: 'max-bundle' });
             pc.remoteCommand = new Map();
             const v = pc.v = document.createElement('video');
             pc.signal = signal;
