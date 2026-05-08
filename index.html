@@ -213,16 +213,18 @@
         };
         const turn = {
           iceServers: [
-          {
-          urls: [
-          "turn:external:3478"
-          ],
-          username: "test",
-          credential: "test"
-          }
+            {
+              urls: `stun:${SIGIP}:3478`,
+            },
+            {
+              urls: `turns:${SIGIP}:5349`,
+              username: "user",
+              credential: "pass"
+            }
           ]
         };
-        let signalAddress = 'https://example.com/signl/';
+        let SIGIP;
+        let signalAddress = `https://${SIGIP}/signl/`;
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
