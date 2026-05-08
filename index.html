@@ -232,7 +232,6 @@
         }
         let signalAddress = '', signalOFFLINE = false;
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
-          if (signalOFFLINE) httpListen = false
           console.log('sending', msg);
           if (!httpListen) {
             const iframe = await iframeView();
@@ -251,6 +250,7 @@
             }, 'SDP', JSON.stringify(msg), version);
           } else await fetch(`${signalAddress}send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
         }}) => {
+          if (signalOFFLINE) httpListen = false
           const rTime = (i, d = new Date(i)) => String(d.getHours()).padStart(2, '0') + ':' +
             String(d.getMinutes()).padStart(2, '0') + ':' +
             String(d.getSeconds()).padStart(2, '0') + ':' +
