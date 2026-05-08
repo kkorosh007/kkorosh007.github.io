@@ -202,7 +202,7 @@
           });
         };
         const inJector = _ => {
-          tCode.value = (`javascript: (_ => {
+          return (`javascript: (_ => {
   const tCode = document.querySelector("#tCode");
   tCode.value = \`` + tCode.value + `\`;\n })();`).replaceAll('`', '%60').replaceAll('\n', '%0A')
         }
