@@ -227,27 +227,28 @@
                 }
               ];
               signalAddress = name;
-            }).catch(e => {});
-          }).catch(e => {});
+            }).catch(e => {signalOFFLINE = true});
+          }).catch(e => {signalOFFLINE = true});
         }
-        let signalAddress = '';
+        let signalAddress = '', signalOFFLINE = false;
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
+          if (!signalAddress) httpListen = false
           console.log('sending', msg);
           if (!httpListen) {
-            const id = msg.to;
-            xxx = msg;
-            msg = new URLSearchParams({ id, msg: (JSON.stringify(msg)) }).toString();
-            const div1 = document.body.appendChild(document.createElement('div'));
-            div1.style.cssText = 'background-color: rgba(30, 30, 30, .7); color: white; position: absolute; display: grid; place-items: center; left: 0px; top:0px; width: 100%; height: 100%;';
-            div1.innerText = 'Click to connect';
-            console.log('adding div');
-            div1.addEventListener('click', _ => {
-              const www = window.open(signalAddress + 'send?autoanswer=1#' + encodeURIComponent(msg), 'dspatcher');
-              window.addEventListener('message', (event) => {
-                document.body.removeChild(div1);
-                peers.get(id).receiveMessage(JSON.parse(event.data.message));
-              }, {once: true});
-            }, {once: true});
+            const iframe = await iframeView();
+            const checkconnected = _ => {
+              if (peers.get(msg.to).connectionState == 'connected') {
+                console.log('are online trying to close iframe');
+                peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
+                let iframe = document.querySelector('iframe');
+                if (iframe) iframe.contentWindow.state.clear(true);              
+              };
+            };
+            peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
+            iframe.contentWindow.state.qrcreate(e => {
+              console.log('peers called back', e);
+              if (msg.sdp.description.type == 'offer') acceptOffer(msg.to);
+            }, 'SDP', JSON.stringify(msg), version);
           } else await fetch(`${signalAddress}send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
         }}) => {
           const rTime = (i, d = new Date(i)) => String(d.getHours()).padStart(2, '0') + ':' +
