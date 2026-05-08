@@ -240,7 +240,7 @@
                 peers.get(id).receiveMessage(JSON.parse(event.data.message));
               }, {once: true});
             }, {once: true});
-          } else await fetch(`send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
+          } else await fetch(`${signalAddress}send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
         }}) => {
           const rTime = (i, d = new Date(i)) => String(d.getHours()).padStart(2, '0') + ':' +
             String(d.getMinutes()).padStart(2, '0') + ':' +
