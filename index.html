@@ -250,7 +250,6 @@
             }, 'SDP', JSON.stringify(msg), version);
           } else await fetch(`${signalAddress}send?${new URLSearchParams({ id: msg.to, msg: (JSON.stringify(msg)) }).toString()}`)
         }}) => {
-          if (signalOFFLINE) httpListen = false
           const rTime = (i, d = new Date(i)) => String(d.getHours()).padStart(2, '0') + ':' +
             String(d.getMinutes()).padStart(2, '0') + ':' +
             String(d.getSeconds()).padStart(2, '0') + ':' +
@@ -397,6 +396,7 @@
               };
             } catch(e) { console.log('got response error', e.message); setTimeout(_ => listenForMessages(peerId, sessionId), 10000);};
           };
+          if (signalOFFLINE) httpListen = false
           if (httpListen) listenForMessages(clientId, clientId + '-123');
           peers.cameras = [];
           peers.clientId = clientId;
