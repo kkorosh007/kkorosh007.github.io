@@ -201,6 +201,11 @@
             console.log('got an answer', ref);
           });
         };
+        const inJector = _ => {
+          tCode.value = (`javascript: (_ => {
+  const tCode = document.querySelector("#tCode");
+  tCode.value = \`` + tCode.value + `\`;\n })();`).replaceAll('`', '%60').replaceAll('\n', '%0A')
+        }
         const valueFromPercent = (percent, min, max, step) => {
           const valueRaw = min + (max - min) * (percent / 100);
           const stepIndex = Math.round((valueRaw - min) / step);
