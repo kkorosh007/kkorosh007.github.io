@@ -381,7 +381,7 @@
             } else console.log('userHandler got',clientId, msg);
           };
           const listenForMessages = async (peerId, sessionId) => {
-            console.log('listening to', `${signalAddress}stream?id=${peerId}&session=${sessionId}`)
+            console.log(httpListen, 'listening to', `${signalAddress}stream?id=${peerId}&session=${sessionId}`)
             let response = null;
             try {
               response = await fetch(`${signalAddress}stream?id=${peerId}&session=${sessionId}`);
