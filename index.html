@@ -222,7 +222,7 @@
           }
           ]
         };
-
+        let signalAddress = 'https://kkorosh007.duckdns.org/skin/';
         const ChatRoom = (clientId, httpListen = true, peers = new Map(), signaling = {trickleIce: false, sendMessage: async msg => {
           console.log('sending', msg);
           if (!httpListen) {
@@ -234,7 +234,7 @@
             div1.innerText = 'Click to connect';
             console.log('adding div');
             div1.addEventListener('click', _ => {
-              const www = window.open('http://192.168.1.119:8000/send?autoanswer=1#' + encodeURIComponent(msg), 'dspatcher');
+              const www = window.open(signalAddress + 'send?autoanswer=1#' + encodeURIComponent(msg), 'dspatcher');
               window.addEventListener('message', (event) => {
                 document.body.removeChild(div1);
                 peers.get(id).receiveMessage(JSON.parse(event.data.message));
@@ -372,17 +372,21 @@
             } else console.log('userHandler got',clientId, msg);
           };
           const listenForMessages = async (peerId, sessionId) => {
-            const response = await fetch(`/stream?id=${peerId}&session=${sessionId}`);
-            const reader = response.body.getReader(), decoder = new TextDecoder('utf-8');
-            while (true) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              const chunk = decoder.decode(value, { stream: true });
-              let msg = '';
-              try { msg = JSON.parse(chunk); } catch(e) {continue};
-              if (peers.has(msg.from)) await peers.get(msg.from).receiveMessage(msg);
-              else await createPeer(msg.from, signaling).receiveMessage(msg);
-            };
+            console.log('listening to', `${signalAddress}stream?id=${peerId}&session=${sessionId}`)
+            let response = null;
+            try {
+              response = await fetch(`${signalAddress}stream?id=${peerId}&session=${sessionId}`);
+              const reader = response.body.getReader(), decoder = new TextDecoder('utf-8');
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value, { stream: true });
+                let msg = '';
+                try { msg = JSON.parse(chunk); } catch(e) { console.log('JSON parsing Error'); continue};
+                if (peers.has(msg.from)) await peers.get(msg.from).receiveMessage(msg);
+                else await createPeer(msg.from, signaling).receiveMessage(msg);
+              };
+            } catch(e) { console.log('got response error', e.message); setTimeout(_ => listenForMessages(peerId, sessionId), 10000);};
           };
           if (httpListen) listenForMessages(clientId, clientId + '-123');
           peers.cameras = [];
@@ -501,6 +505,13 @@
           const bytes = message instanceof Uint8Array ? message : new TextEncoder('utf-8').encode(message);
           return new TextDecoder('utf-8').decode(await postEncrypted('/encryptedcall', key, endpoint, bytes));
         };
+        const refreshAll = async _ => {
+          await Promise.all([
+            fetch("index.html", { cache: "reload" }),
+            fetch("blank.html", { cache: "reload" }),
+          ]);
+          location.reload();
+        };
         const iframeView = (container = document.body) => new Promise(resolve => { 
           const check = document.querySelector('#iframe');
           if (check) return resolve(check);//check.parentElement.removeChild(check);
@@ -527,7 +538,6 @@
 
   ${outputmarker}
 `;
-
           const Eval = async code => new Promise(resolve => {
             const script = document.createElement('script');
             let errorHandler = event => {
@@ -575,40 +585,6 @@
           if (p >= code.length) p = 0;
           t.selectionStart = t.selectionEnd = p;
           return ret;
-        };
-
-        const runcode1 = async _ => {
-          let t = document.querySelector('textarea'), code = t.value, marker = code.indexOf(outputmarker);
-          let result = [], error = '', log = (...args) => result.push([...args]), tmp = '';
-          let p = t.selectionStart;
-          if (marker == -1 || outputmarker == '') marker = code.length;
-          else marker = marker - 3;
-          code = code.substring(0, marker).replace(/\n+$/, '');
-          outputmarker = `OUTPUT - ${new Date().toTimeString().slice(0,8)}`;
-          try {await eval(`"use strict";(async _ => {${code}})()`)} catch(e) {
-            error = 'ERROR: ' + e.message + '\n' + e.stack + '\n';
-            const lines = error.split('\n');
-            for (let i = 0; i < lines.length; i++) {
-              const line = lines[i];
-              if (line.includes('at eval')) {
-                const p1 = line.indexOf('eval'), p2 = line.indexOf(',', p1) + 2;
-                lines[i] = line.substring(0, p1) + line.substring(p2);
-                break;
-              };
-            };
-            error = lines.join('\n');
-          };
-          for (let i = 0; i < result.length; i++) result[i] = result[i].join(' ');
-          result = result.join('\n') + '\n' + error;
-          t.value = code + `
-
-
-  ${outputmarker}
-
-${result}
-  `;
-          if (p >= code.length) p = 0;
-          t.selectionStart = t.selectionEnd = p;
         };
         window.addEventListener('load', _ => {
           const b = document.querySelectorAll('button');
