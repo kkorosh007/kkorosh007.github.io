@@ -391,7 +391,7 @@
                 if (done) break;
                 const chunk = decoder.decode(value, { stream: true });
                 let msg = '';
-                try { msg = JSON.parse(chunk); } catch(e) { console.log('JSON parsing Error'); continue};
+                try { msg = JSON.parse(chunk); } catch(e) { console.log('JSON parsing Error', chunk); continue};
                 if (peers.has(msg.from)) await peers.get(msg.from).receiveMessage(msg);
                 else await createPeer(msg.from, signaling).receiveMessage(msg);
               };
