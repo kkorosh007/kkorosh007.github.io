@@ -157,28 +157,7 @@
             };
           }, {once: true});
         }
-        const connect4 = id => {
-          peers = new Map();
-          peers = ChatRoom(id, false, peers, {trickleIce: false, sendMessage: async msg => {
-            const iframe = await iframeView();
-            const checkconnected = _ => {
-              if (peers.get(msg.to).connectionState == 'connected') {
-                console.log('are online trying to close iframe');
-                peers.get(msg.to).removeEventListener('connectionstatechange', checkconnected);
-                let iframe = document.querySelector('iframe');
-                if (iframe) iframe.contentWindow.state.clear(true);              
-              };
-            };
-            peers.get(msg.to).addEventListener('connectionstatechange', checkconnected);
-            iframe.contentWindow.state.qrcreate(e => {
-              console.log('peers called back', e);
-              if (msg.sdp.description.type == 'offer') acceptOffer(msg.to);
-            }, 'SDP', JSON.stringify(msg), version);
-          }});
-        }
-        const makeOffer = async to => {
-          await peers.makeCall(to);
-        };
+        const makeOffer = async to => await peers.makeCall(to);
         const acceptOffer = async from => {
           const iframe = await iframeView();
           iframe.contentWindow.state.qrscan((qrscan, action, message) => {
@@ -475,6 +454,50 @@
           };
           input.click();
         };
+        const deriveKey = async (sessionKey, iv, i) => {
+          const info = new Uint8Array([...new TextEncoder().encode("session-key"), ...iv, i]);
+          const baseKey = await crypto.subtle.importKey("raw", sessionKey, "HKDF", false, ["deriveKey"]);
+          return crypto.subtle.deriveKey(
+            {name: "HKDF", hash: "SHA-256", salt: iv, info},
+            baseKey,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt", "decrypt"]
+          );
+        };
+        const deriveIv = (baseIv, counter) => {
+          const iv = baseIv.slice(), view = new DataView(iv.buffer), base = view.getBigUint64(4, false);
+          view.setBigUint64(4, base + BigInt(counter), false);
+          return iv;
+        };
+        const testAESe = async _ => {
+          const decoder = new TextDecoder(), pass = "I am sick";
+          const saltA = crypto.getRandomValues(new Uint8Array(16)), keyA = await createAesKeyFromPassword(pass, saltA);
+          const sessionAIV = crypto.getRandomValues(new Uint8Array(12)), sessionAKey = crypto.getRandomValues(new Uint8Array(32));
+          const sessionA = new Uint8Array([...sessionAIV, ...sessionAKey]);
+          const sessionEncIV = crypto.getRandomValues(new Uint8Array(12));
+          const {ciphertext: sessionEncrypted} = await encryptBytes(keyA, sessionA, sessionEncIV);
+          const packet = new Uint8Array([...saltA, ...sessionEncIV, ...sessionEncrypted]);
+          return {packet, iv: sessionAIV, key: sessionAKey};
+        };
+        const testAESd = async packet => {
+          const saltB = packet.slice(0, 16), sessionEncIV_B = packet.slice(16, 28), sessionCipher = packet.slice(28);
+          const pass = "I am sick", keyB = await createAesKeyFromPassword(pass, saltB);
+          const sessionB = await decryptBytes(keyB, sessionEncIV_B, sessionCipher);
+          const sessionBIV = sessionB.slice(0, 12), sessionBKey = sessionB.slice(12);
+          return {iv: sessionBIV, key: sessionBKey}
+        };
+        const testAESsE = async (sessionKey, sessionIV, counter, message) => {
+          const encoder = new TextEncoder();
+          const sessionKey1 = await deriveKey(sessionKey, sessionIV, counter), iv = deriveIv(sessionIV, counter);
+          return (await encryptBytes(sessionKey1, encoder.encode(message), iv))
+        };
+        const testAESsD = async (sessionKey, sessionIV, counter, encryptedMsg) => {
+          const decoder = new TextDecoder();
+          const sessionKey1 = await deriveKey(sessionKey, sessionIV, counter), iv = deriveIv(sessionIV, counter);
+          const decrypted = await decryptBytes(sessionKey1, iv, encryptedMsg);
+          return "decrypted: " + decoder.decode(decrypted);
+        };
         const createAesKey = async _ => crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
         const createAesKeyFromPassword = async (password, salt) => {
           if (!salt) salt = crypto.getRandomValues(new Uint8Array(16));
@@ -484,7 +507,7 @@
             {
               name: 'PBKDF2',
               salt: salt,
-              iterations: 100000,
+              iterations: 1_000_000,
               hash: 'SHA-256'
             },
             passwordKey,
@@ -495,8 +518,8 @@
         };
         const exportKey = async key => new Uint8Array(await crypto.subtle.exportKey('raw', key));
         const importKey = async rawBytes => crypto.subtle.importKey('raw', rawBytes, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
-        const encryptBytes = async (key, bytes) => {
-          const iv = crypto.getRandomValues(new Uint8Array(12)), c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes);
+        const encryptBytes = async (key, bytes, iv = crypto.getRandomValues(new Uint8Array(12))) => {
+          const c = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes);
           return { iv, ciphertext: new Uint8Array(c) };
         };
         const decryptBytes = async (key, iv, cipherBytes) => {
@@ -645,11 +668,7 @@
   <body role="main">
     <button style="align-self: start;">Run</button>
     <button id="bJect" style="display: none;" aria-label="Inject App">Inject App Home</button>
-    <textarea aria-label="JS Parser" id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;">
-      version = 3;
-      connect('k');
-      makeOffer('s');
-    </textarea>
+    <textarea aria-label="JS Parser" id="tCode" autofocus autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" style="padding: 1rem; font-size: 1.2rem; align-self: end; margin-bottom: 3rem; min-height: calc(70% - 6rem); min-width: 90%;"></textarea>
   </body>
 </html>
 

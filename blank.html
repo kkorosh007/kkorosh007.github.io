@@ -139,7 +139,6 @@
               scale: 4,
               errorCorrectionLevel: "L",
               margin: 4,
-              //width: 600,
               color: {
                 dark: "#000000",
                 light: "#ffffff"
@@ -151,7 +150,6 @@
               document.querySelector('.qr_scan').style.display = 'none';
               document.querySelector('.qr_create').style.display = '';
               document.querySelector('.qr_overlay>button').onpointerdown = e => {e.preventDefault(); setTimeout(_ => {state.clear(); resolve('exit');}, 0)};
-              if (!isNaN(message)) message = document.documentElement.outerHTML.substring(0, parseInt(message));
               const create = async message => {
                 let qrString = await QRCode.toString(message, state.qrCfg);
                 return qrString.replace("<svg", '<svg preserveAspectRatio="xMidYMid meet"');
